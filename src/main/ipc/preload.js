@@ -1,0 +1,15 @@
+const { contextBridge, ipcRenderer } = require('electron/renderer')
+
+const WINDOW_API = {
+    closeApp: () => ipcRenderer.send('close'),
+    minimizeApp: () => ipcRenderer.send('minimize'),
+
+    saveSaurus: (dominio, chavecaixa) => ipcRenderer.invoke('saveInfoSaurus', [dominio, chavecaixa]),
+    saveNuvemShop: (code) => ipcRenderer.invoke('saveInfoNuvemShop', code),
+    getInfoUser: (field) => ipcRenderer.invoke('getInfoUser', field),
+    start: () => ipcRenderer.invoke('startProgram'),
+    quickStart: () => ipcRenderer.invoke('startReadNotifyTable'),
+    align: () => ipcRenderer.invoke('alignBase')
+}
+
+contextBridge.exposeInMainWorld('api', WINDOW_API)

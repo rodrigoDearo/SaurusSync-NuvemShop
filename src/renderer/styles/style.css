@@ -1,0 +1,328 @@
+
+body{
+  background-color: white;
+  overflow: hidden;
+}
+
+.menu{
+  background-color: #08073F;
+}
+
+.titulo{
+  color: white;
+  margin-top: 10px;
+}
+
+#navbar_menu{
+  background-color: #245576;
+  margin-bottom: 35px;
+}
+
+#button_menu{
+  background: white;
+  border: none;
+}
+
+#close{
+  background-color: white;
+}
+
+.button_menu{
+  border: 0.5 solid black;
+  margin-bottom: 5px;
+  border-radius:  5px;
+  background-color: transparent;
+}
+
+#offcanvasRightLabel{
+  font-size: 1.25em;
+  color: white;
+}
+
+/* STYLE PARA TODOS FORMS */
+
+
+.input-text{
+  border: 0.8px solid black;
+}
+
+
+.form-label{
+  font-size: 1.25em;
+}
+
+#last-input{
+  padding-bottom: 25px;
+}
+
+
+.botao-save{
+  background-color: #58AD61;
+  border: none;
+}
+
+#botaoCloseApp{
+  background-color: white;
+  padding: 10px;
+}
+
+#minimizeApp{
+  margin-right: 15px;
+}
+
+#background-loading{
+  position: absolute;
+  opacity: 0.6;
+  background-color: black;
+  width: 0;
+  height: 0;
+  z-index: 9999;
+}
+
+#gif-loading{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  height: 75vh;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+
+.logo {
+  margin: 0;
+  font-size: 24px;
+}
+
+main {
+  text-align: center;
+  padding: 50px;
+}
+
+.tagline {
+  font-size: 32px;
+  color: #245576;
+}
+
+.description {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.get-started {
+  background-color: #245576;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+footer {
+  position: absolute;
+  background-color: #245576;
+  color: #fff;
+  width: 100vw;
+  top: 90%;
+  padding: 10px;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+footer p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.custom-alert{
+  position: absolute;
+  width: 94vw;
+  padding: 0.75em 1.25em;
+  left: 3vw;
+  top: 10px;
+  display: flex;
+  margin: auto;
+  border-radius: 0.25rem;
+}
+
+
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #245576;
+  margin-bottom: 20px;
+}
+
+.description {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.cta-button {
+  padding: 10px 20px;
+  background-color: #245576;
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+  background-color: #555;
+}
+
+.containerInicialPage{
+  display: flex;
+  justify-content: center;
+  margin: auto 5vw auto auto;
+  align-items: center;
+}
+
+#phraseInitial{
+  padding: 15px;
+  font-size: 30px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bolder;
+  border-right: 3px solid rgb(24, 24, 117);
+}
+
+.textblue{
+  color: white;
+  background-color: rgb(24, 24, 117);
+}
+
+#services{
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+#tech-list{
+  font-weight: bolder;
+  width: 60vw;
+  display: flex;
+  justify-content: space-around;
+  padding: 3px;
+  color: rgb(22, 13, 141);
+  border: 2px solid rgb(22, 13, 141);
+  border-radius: 15px;
+}
+
+#textInicial{
+  padding-left: 30px;
+  padding-top: 40px;
+  padding-right: 30px;
+  padding-bottom: 40px;
+  border-radius: 1em;
+  border: 0.5px solid black;
+}
+
+#botaoStart{
+  color: rgb(14, 14, 160);
+  background-color: white;
+  border: 1px solid rgb(14, 14, 160);
+}
+
+#botaoSinc{
+  color: rgb(14, 14, 160);
+  background-color: white;
+  border: 1px solid rgb(14, 14, 160);
+  margin-top: 5vh;
+}
+
+#botaoQuickSync{
+  color: rgb(14, 14, 160);
+  background-color: white;
+  border: 1px solid rgb(14, 14, 160);
+  margin-top: 5vh;
+}
+
+#botaoStart:hover{
+  color: white;
+  background-color: rgb(14, 14, 160);
+  border: 1px solid rgb(14, 14, 160);
+}
+
+#botaoQuickSync:hover{
+  color: white;
+  background-color: rgb(14, 14, 160);
+  border: 1px solid rgb(14, 14, 160);
+}
+
+#watermark{
+  position: absolute;
+  z-index: -5;
+  height: 50vh;
+  left: 225px;
+  opacity: 0.1;
+  top: 100px;
+}
+
+
+
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s;
+}
+
+.popup.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.popup-content {
+  background: #ffffff;
+  padding: 20px 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #245576;
+  position: relative;
+  animation: popup-fade-in 0.3s ease-in-out;
+}
+
+.checkmark {
+  display: block;
+  font-size: 40px;
+  color: #4CAF50;
+  margin-bottom: 10px;
+}
+
+@keyframes popup-fade-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+#botaoAlignBase{
+  margin-top: 5px;
+}
