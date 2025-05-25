@@ -7,9 +7,7 @@ const WINDOW_API = {
     saveSaurus: (dominio, chavecaixa) => ipcRenderer.invoke('saveInfoSaurus', [dominio, chavecaixa]),
     saveNuvemShop: (code) => ipcRenderer.invoke('saveInfoNuvemShop', code),
     getInfoUser: (field) => ipcRenderer.invoke('getInfoUser', field),
-    start: () => ipcRenderer.invoke('startProgram'),
-    quickStart: () => ipcRenderer.invoke('startReadNotifyTable'),
-    align: () => ipcRenderer.invoke('alignBase')
+    start: () => ipcRenderer.invoke('startProgram')
 }
 
 contextBridge.exposeInMainWorld('api', WINDOW_API)

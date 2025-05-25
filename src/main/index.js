@@ -96,34 +96,11 @@ ipcMain.handle('startProgram', async () => {
   })
 })
 
-
-ipcMain.handle('alignBase', async () => {
-  gravarLog(' . . . Aligning Base  . . .')
-
-  let numeroProdutosDeletados = await alignBase()
-  return numeroProdutosDeletados
-})
-
-
 async function mainProcess(syncFull){
   return new Promise(async (resolve, reject) => {
     var config;
 
-    await returnConfigToAccessDB()
-    .then(async (response) => {
-      config = response;
-      await deleteErrorsRecords()
-      let mensageReturn = await createDependencies(config)
-      if(mensageReturn.code == 500){
-        reject(mensageReturn)
-      }
-    })
-    .then(async () => {
-      let mensageReturn = await limparTabela(config)
-      if(mensageReturn.code == 500){
-        reject(mensageReturn)
-      }
-    })/*
+    await deleteErrorsRecords()/*
     .then(async () => {
       if(syncFull){
         let mensageReturn = await requireAllProducts(config)
@@ -131,7 +108,7 @@ async function mainProcess(syncFull){
           reject(mensageReturn)
         }
       }
-    })*/
+    })
     .then(async () => {
       setInterval(async () => {
         await readNewRecords(config)
@@ -142,20 +119,6 @@ async function mainProcess(syncFull){
         })
       
       }, 300000);
-    })
+    })*/
   })
 }
-
-
-async function alignBase(){
- /* return new Promise(async (resolve, reject) => {
-    await requireAllRegistersNuvem(0)
-    .then(async (produtos) => {
-      resolve(produtos)
-    })
-  })*/
-}
-
-//ver se esta subindo imagem
-//ver se esta subindo variantes
-//se nao tentar arrumar

@@ -14,68 +14,6 @@ const userDataPath = 'src/build';
 const pathProducts = path.join(userDataPath, 'products.json');
 var produtosDeletados = 0;
 
-async function requireAllRegistersNuvem(index){
-    let productsDB = JSON.parse(fs.readFileSync(pathProducts));
-    let finish = false
-
-    return new Promise(async (resolve, reject) => {
-        let i = index+1;
-        
-        await preparingGetProductsAndVariants(i)
-        .then(async (response) => {
-            if(response){
-                await readingProductsOnPage(response, productsDB, 0)
-            }else{
-                finish = true;
-                resolve(produtosDeletados)
-            }
-        })
-        .then(async () => {
-            if(!finish){
-               await requireAllRegistersNuvem(i)
-            }
-        })
-        .then(() => {
-            resolve(produtosDeletados)
-        })
-        .catch(async () => {
-            resolve()
-        })
-        
-    })
-}
-
-
-async function readingProductsOnPage(page, products, index){
-    return new Promise(async (resolve, reject) => {
-        let i = index+1;
-        if(page[index]){
-           await findProductKeyByIdNuvemShopAsync(products, page[index].id)
-           .then(async (response) => {
-
-                if(response){
-//! TRECHO INCOMPLETO - DEVE SER REALIZADO UM DELETE DAS VARIANTS LIDAS NO GET E DELETAR VARIANTES DO JSON
-                }else{
-                    await preparingDeletePermanentProduct(page[index].id)
-                    .then(() => {
-                        produtosDeletados++;
-                    })
-                }
-           })
-           .then(async () => {
-                await readingProductsOnPage(page, products, i)
-                .then(() => {
-                     resolve()
-                })
-   
-            })
-        }else{
-            resolve()
-        }
-
-    })
-}
-
 
 async function requireAllProducts(config){
     return new Promise(async(resolve, reject) => {

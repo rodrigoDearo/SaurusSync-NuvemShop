@@ -58,30 +58,6 @@ async function startSync(){
 }
 
 
-async function startQuickSync(){
-    await loadingPage(true)
-    await window.api.quickStart()
-    .then(async () => {
-        await loadingPage(false)
-    })
-  //  alert(mensage)
-}
-
-
-async function alignBase(){
-    await loadingPage(true)
-    await window.api.align()
-    .then(async (quantidade) => {
-        await loadingPage(false)
-        showSuccessPopup(`Deletado ${quantidade} Produtos cadastrados apenas na NuvemShop`)
-    })
-  //  alert(mensage)
-}
-
-
-
-
-
 async function loadingPage(status){
     let buttons = document.getElementsByClassName('btn');
     let gifLoading = document.getElementById('gif-loading');
