@@ -1,7 +1,31 @@
 const { getProductsAndVariants, registerProduct, updateProduct, deleteProduct, deleteProductPermanent, undeleteProduct, registerCategory, deleteCategory, getVariants, registerVariation, updateVariation, deleteVariation, uploadImage, deleteImage, generateToken } = require('./requestsNuvemShop');
+const { getProducts } = require('./requestsSaurus.js');
 const { returnValueFromJson } = require('./manageInfoUser');
 const { returnInfo } = require('../envManager');
   
+async function preparingGetProductsOnSaurus(parameters, password) {
+    const headers = {
+          'Content-Type': 'text/xml; charset=utf-8',
+          'SOAPAction': 'http://saurus.net.br/retCadastros'
+        }
+
+    const body = `<?xml version="1.0" encoding="utf-8"?>
+        <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+          <soap:Body>
+            <retCadastros xmlns="http://saurus.net.br/">
+              <xBytesParametros>${parameters}</xBytesParametros>
+              <xSenha>${password}</xSenha>
+            </retCadastros>
+          </soap:Body>
+        </soap:Envelope>`
+
+    await getProducts(body, 
+      headers);
+  }
+
+
+// -----------------------------------------------------------------------
+
   async function getHeaderAndStore() {
     const cli_id = await returnInfo('client_id');
     const access_token = await returnValueFromJson('tokennuvemshop');
@@ -131,7 +155,7 @@ const { returnInfo } = require('../envManager');
   }
   
   module.exports = {
-    preparingGetProductsAndVariants,
+    preparingGetProductsOnSaurus,
     preparingPostProduct,
     preparingUpdateProduct,
     preparingDeleteProduct,

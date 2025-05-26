@@ -9,12 +9,8 @@ function returnInfo(infoRequired){
     return new Promise((resolve, reject) => {
 
         switch (infoRequired) {
-            case 'user_database':
-                resolve(process.env.USR_DATABASE) 
-                break;
-        
-            case 'password_database':
-                resolve(process.env.PSW_DATABASE) 
+            case 'check_saurus':
+                resolve(process.env.PASS_WS) 
                 break;
             
             case 'client_secret':

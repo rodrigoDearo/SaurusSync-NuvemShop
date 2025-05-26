@@ -1,27 +1,6 @@
 const axios = require('axios');
+
 const { successHandlingRequests, errorHandlingRequest, saveNewUniqueIdInProduct, gravarLog } = require('./auxFunctions');
-const { parse } = require('dotenv');
-
-
-async function getProductsAndVariants(store_id, header, page){
-    return new Promise(async (resolve, reject) => {
-        await axios.get(`https://api.nuvemshop.com.br/v1/${store_id}/products?page=${page}`, header)
-        .then(async (answer) => {
-            resolve(answer.data)
-        })
-        .catch(async (error) => {
-            if(error.response.data.code==404){
-                resolve(null)
-            }else
-            if(error.response.data.code==429){
-                resolve(null)
-            }else{
-                console.log(error.response.data)
-            }
-        })
-    })
-}
-
 
 async function registerProduct(store_id, header, body, idHost){
     return new Promise(async (resolve, reject) => {
