@@ -564,7 +564,6 @@ async function generateToken(body){
 
 
 module.exports = { 
-    getProductsAndVariants,
     registerProduct,
     updateProduct,
     deleteProduct,
