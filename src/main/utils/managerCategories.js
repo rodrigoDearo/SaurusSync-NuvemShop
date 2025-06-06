@@ -1,4 +1,3 @@
-const conexao = require('node-firebird');
 const fs = require ('fs')
 const path = require('node:path')
 const { app } = require('electron')

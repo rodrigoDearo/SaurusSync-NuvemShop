@@ -34,7 +34,7 @@ async function preparingGetProductsOnSaurus(parameters, password) {
     const config = {
       headers: {
         'Authentication': `bearer ${access_token}`,
-        'User-Agent': `HostSync (${cli_id})`,
+        'User-Agent': `SaurusSync (${cli_id})`,
         'Content-Type': 'application/json',
       },
     };
@@ -50,25 +50,25 @@ async function preparingGetProductsOnSaurus(parameters, password) {
   
   async function preparingPostProduct(product) {
     const infosNuvem = await getHeaderAndStore();
-    const idHost = product.codigo;
+    const idSaurus = product.codigo;
     delete product.codigo;
-    await registerProduct(infosNuvem[0], infosNuvem[1], product, idHost);
+    await registerProduct(infosNuvem[0], infosNuvem[1], product, idSaurus);
   }
   
   async function preparingUpdateProduct(idproduct, product) {
     const infosNuvem = await getHeaderAndStore();
-    const idHost = product.codigo;
+    const idSaurus = product.codigo;
     delete product.codigo;
     delete product.attributes;
-    await updateProduct(infosNuvem[0], infosNuvem[1], product, idproduct, idHost);
+    await updateProduct(infosNuvem[0], infosNuvem[1], product, idproduct, idSaurus);
   }
   
-  async function preparingDeleteProduct(idHost, idproduct, product) {
+  async function preparingDeleteProduct(idSaurus, idproduct, product) {
     const infosNuvem = await getHeaderAndStore();
     delete product.codigo;
     delete product.attributes;
     product.published = false;
-    await deleteProduct(infosNuvem[0], infosNuvem[1], product, idproduct, idHost);
+    await deleteProduct(infosNuvem[0], infosNuvem[1], product, idproduct, idSaurus);
   }
 
   async function preparingDeletePermanentProduct(idproduct) {
@@ -76,12 +76,12 @@ async function preparingGetProductsOnSaurus(parameters, password) {
     await deleteProductPermanent(infosNuvem[0], infosNuvem[1], idproduct);
   }
   
-  async function preparingUndeleteProduct(idHost, idproduct, product) {
+  async function preparingUndeleteProduct(idSaurus, idproduct, product) {
     const infosNuvem = await getHeaderAndStore();
     delete product.codigo;
     delete product.attributes;
     product.published = true;
-    await undeleteProduct(infosNuvem[0], infosNuvem[1], product, idproduct, idHost);
+    await undeleteProduct(infosNuvem[0], infosNuvem[1], product, idproduct, idSaurus);
   }
   
   async function preparingPostCategory(category) {
@@ -101,21 +101,21 @@ async function preparingGetProductsOnSaurus(parameters, password) {
     return id ?? null;
   }
   
-  async function preparingPostVariation(variant, idProduct, idProductHost) {
+  async function preparingPostVariation(variant, idProduct, idProductSaurus) {
     const infosNuvem = await getHeaderAndStore();
     delete variant.codigo;
-    await registerVariation(infosNuvem[0], infosNuvem[1], variant, idProduct, idProductHost);
+    await registerVariation(infosNuvem[0], infosNuvem[1], variant, idProduct, idProductSaurus);
   }
   
-  async function preparingUpdateVariation(variant, idVariant, idProduct, idProductHost) {
+  async function preparingUpdateVariation(variant, idVariant, idProduct, idProductSaurus) {
     const infosNuvem = await getHeaderAndStore();
     delete variant.codigo;
-    await updateVariation(infosNuvem[0], infosNuvem[1], variant, idProduct, idVariant, idProductHost);
+    await updateVariation(infosNuvem[0], infosNuvem[1], variant, idProduct, idVariant, idProductSaurus);
   }
   
-  async function preparingDeleteVariation(idVariant, idProduct, idProductHost, grade, stockProduct) {
+  async function preparingDeleteVariation(idVariant, idProduct, idProductSaurus, grade, stockProduct) {
     const infosNuvem = await getHeaderAndStore();
-    await deleteVariation(infosNuvem[0], infosNuvem[1], idProduct, idVariant, idProductHost, grade, stockProduct);
+    await deleteVariation(infosNuvem[0], infosNuvem[1], idProduct, idVariant, idProductSaurus, grade, stockProduct);
   }
 
   /*
@@ -125,7 +125,7 @@ async function preparingGetProductsOnSaurus(parameters, password) {
   }
   */
 
-  async function preparingUploadImage(image, idProductNuvem, idProductHost, hash) {
+  async function preparingUploadImage(image, idProductNuvem, idProductSaurus, hash) {
     const infosNuvem = await getHeaderAndStore();
     const body = {
       "filename": "image",
@@ -133,13 +133,13 @@ async function preparingGetProductsOnSaurus(parameters, password) {
       "attachment": image
     };
     if(image){
-      await uploadImage(infosNuvem[0], infosNuvem[1], body, idProductNuvem, idProductHost, hash);
+      await uploadImage(infosNuvem[0], infosNuvem[1], body, idProductNuvem, idProductSaurus, hash);
     }
   }
 
-  async function preparingDeleteImage(idProductNuvem, idImageNuvem, idProductHost) {
+  async function preparingDeleteImage(idProductNuvem, idImageNuvem, idProductSaurus) {
     const infosNuvem = await getHeaderAndStore();
-    await deleteImage(infosNuvem[0], infosNuvem[1], idProductNuvem, idImageNuvem, idProductHost);
+    await deleteImage(infosNuvem[0], infosNuvem[1], idProductNuvem, idImageNuvem, idProductSaurus);
   }
 
   async function preparingGenerateToken(code) {

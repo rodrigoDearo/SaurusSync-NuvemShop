@@ -1,9 +1,9 @@
-const conexao = require('node-firebird');
+const axios = require('axios');
 const fs = require ('fs')
 const path = require('node:path')
 const { app } = require('electron')
 
-const { preparingGetProductsAndVariants, preparingPostProduct , preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
+const { preparingPostProduct , preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
 const { returnCategoryId } = require('./managerCategories.js');
 const { requireAllVariationsOfAProduct } = require('./managerVariations.js')
 const { registerOrUpdateImage } = require('./managerImages.js')
@@ -12,34 +12,18 @@ const { findProductKeyByIdNuvemShopAsync, gravarLog } = require('./auxFunctions.
 const userDataPath = 'src/build';
 //const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathProducts = path.join(userDataPath, 'products.json');
-var produtosDeletados = 0;
 
 
 async function requireAllProducts(config){
     return new Promise(async(resolve, reject) => {
         try {
-        conexao.attach(config, function (err, db){
-            if (err)
-                throw err;
-  
-            let codigoSQL = `SELECT 
-                                P.ID_PRODUTO,
-                                P.PRODUTO,
-                                P.DESCRICAO_COMPLEMENTAR,
-                                P.VALOR_VENDA,
-                                P.CUSTO,
-                                M.MARCA,
-                                P.ESTOQUE,
-                                P.STATUS,
-                                P.FOTO,
-                                P.GRADE,
-                                G.GRUPO,
-                                SG.SUBGRUPO
-                            FROM PRODUTOS P
-                            LEFT JOIN PRODUTOS_MARCA M ON P.MARCA = M.ID
-                            LEFT JOIN PRODUTOS_GRUPO G ON P.GRUPO = G.ID
-                            LEFT JOIN PRODUTOS_SUBGRUPO SG ON P.SUBGRUPO = SG.ID;
-                            `;
+
+            console.log('oi')
+       /*
+           await returnPasswordWSSaurus()
+           .then(response => {
+            console.log(response)
+           })
   
             db.query(codigoSQL, async function (err, result){
                 if (err)
@@ -52,9 +36,7 @@ async function requireAllProducts(config){
                 
             });
           
-        db.detach();
-        });
-  
+     */
       } catch (error) {
         reject(error);
       }
@@ -204,7 +186,6 @@ async function registerOrUpdateProduct(product){
 
 
 module.exports = {
-    requireAllRegistersNuvem,
     requireAllProducts,
     readingAllRecordProducts
 }

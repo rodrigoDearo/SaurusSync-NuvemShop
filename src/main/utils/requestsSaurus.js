@@ -9,14 +9,7 @@ async function getProducts(body, header){
             resolve(answer.data)
         })
         .catch(async (error) => {
-            if(error.response.data.code==404){
-                resolve(null)
-            }else
-            if(error.response.data.code==429){
-                resolve(null)
-            }else{
-                console.log(error.response.data)
-            }
+            resolve()
         })
     })
 }

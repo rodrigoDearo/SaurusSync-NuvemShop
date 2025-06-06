@@ -3,7 +3,7 @@ const path = require('node:path')
 
 const { saveInfos, returnValueFromJson } = require('./utils/manageInfoUser.js')
 const { copyJsonFilesToUserData, gravarLog, deleteErrorsRecords } = require('./utils/auxFunctions.js')
-//const { requireAllRegistersNuvem, requireAllProducts } = require('./utils/managerProducts.js')
+const { requireAllProducts } = require('./utils/managerProducts.js')
 // { readNewRecords } = require('./utils/managerSaurusTableNotify.js');
 const { preparingGenerateToken } = require('./utils/preparingRequests.js')
 
@@ -98,12 +98,11 @@ ipcMain.handle('startProgram', async () => {
 
 async function mainProcess(syncFull){
   return new Promise(async (resolve, reject) => {
-    var config;
 
-    await deleteErrorsRecords()/*
+    await deleteErrorsRecords()
     .then(async () => {
       if(syncFull){
-        let mensageReturn = await requireAllProducts(config)
+        let mensageReturn = await requireAllProducts()
         if(mensageReturn.code == 500){
           reject(mensageReturn)
         }
@@ -119,6 +118,8 @@ async function mainProcess(syncFull){
         })
       
       }, 300000);
-    })*/
+    })
+
+    
   })
 }

@@ -1,11 +1,11 @@
 {
   "saurus": {
-    "dominio": "adsafsaf",
-    "chavecaixa": "fsa"
+    "dominio": "testesdrsistema",
+    "chavecaixa": ""
   },
   "nuvemshop": {
-    "code": "",
-    "access_token": "",
-    "store_id": ""
+    "code": "e810220225096d867c87e181e60f1fc57aea01ab",
+    "access_token": "bf3c3d79a786b1e6619ec6c452fe76e48ff01059",
+    "store_id": 3955689
   }
 }
