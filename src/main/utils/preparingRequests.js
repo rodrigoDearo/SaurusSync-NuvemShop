@@ -2,12 +2,66 @@ const { getProductsAndVariants, registerProduct, updateProduct, deleteProduct, d
 const { getProducts } = require('./requestsSaurus.js');
 const { returnValueFromJson } = require('./manageInfoUser');
 const { returnInfo } = require('../envManager');
+const { returnNumberCodeOfPasswordSaurus, encodedStringInBase64, decodeBase64inFileAndUnizp, stringToXmlObject } = require('./auxFunctions.js');
   
-async function preparingGetProductsOnSaurus(parameters, password) {
+const infosNuvem = getHeaderAndStore();
+
+
+async function returnPasswordWSSaurus() {
+  try {
+    const numberCode = await returnNumberCodeOfPasswordSaurus();
+    const dominio = await returnValueFromJson('dominiosaurus');
+    
+    const response = await returnInfo('check_saurus');
+    const password = `${response}${numberCode}|${dominio}|1`;
+
+    const encoded = await encodedStringInBase64(password);
+
+    return encoded;
+  } catch (err) {
+    console.error(err);
+    return null
+  }
+}
+
+
+async function returnParametersWSSaurus(data, tpSync){
+  try {
+    
+    const dominio = await returnValueFromJson('dominiosaurus');
+    const chavecaixa = await returnValueFromJson('chavecaixasaurus');
+
+    const parameters = `<xmlIntegracao>
+        <Dominio>${dominio}</Dominio>
+        <TpArquivo>50</TpArquivo>
+        <ChaveCaixa>${chavecaixa}</ChaveCaixa>
+        <TpSync>${tpSync}</TpSync>
+        <DhReferencia>${data}</DhReferencia>
+      </xmlIntegracao>`
+
+    const encoded = await encodedStringInBase64(parameters);
+
+    return encoded
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+
+async function preparingGetProductsOnSaurus(data, tpSync) {
     const headers = {
           'Content-Type': 'text/xml; charset=utf-8',
           'SOAPAction': 'http://saurus.net.br/retCadastros'
         }
+
+
+    const password = await returnPasswordWSSaurus()
+    const parameters = await returnParametersWSSaurus(data, tpSync)
+    
+    if(!password || !parameters){
+      return null
+    }
 
     const body = `<?xml version="1.0" encoding="utf-8"?>
         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -19,8 +73,13 @@ async function preparingGetProductsOnSaurus(parameters, password) {
           </soap:Body>
         </soap:Envelope>`
 
-    await getProducts(body, 
-      headers);
+    await getProducts(body, headers)
+    .then(async (response) => {
+//      let xml = await decodeBase64inFileAndUnizp()
+    })
+    .catch(async () => {
+
+    })
   }
 
 
@@ -43,20 +102,17 @@ async function preparingGetProductsOnSaurus(parameters, password) {
   }
   
   async function preparingGetProductsAndVariants(page) {
-    const infosNuvem = await getHeaderAndStore();
     let result = await getProductsAndVariants(infosNuvem[0], infosNuvem[1], page)
     return result
   }
   
   async function preparingPostProduct(product) {
-    const infosNuvem = await getHeaderAndStore();
     const idSaurus = product.codigo;
     delete product.codigo;
     await registerProduct(infosNuvem[0], infosNuvem[1], product, idSaurus);
   }
   
   async function preparingUpdateProduct(idproduct, product) {
-    const infosNuvem = await getHeaderAndStore();
     const idSaurus = product.codigo;
     delete product.codigo;
     delete product.attributes;
@@ -64,7 +120,6 @@ async function preparingGetProductsOnSaurus(parameters, password) {
   }
   
   async function preparingDeleteProduct(idSaurus, idproduct, product) {
-    const infosNuvem = await getHeaderAndStore();
     delete product.codigo;
     delete product.attributes;
     product.published = false;
@@ -72,12 +127,10 @@ async function preparingGetProductsOnSaurus(parameters, password) {
   }
 
   async function preparingDeletePermanentProduct(idproduct) {
-    const infosNuvem = await getHeaderAndStore();
     await deleteProductPermanent(infosNuvem[0], infosNuvem[1], idproduct);
   }
   
   async function preparingUndeleteProduct(idSaurus, idproduct, product) {
-    const infosNuvem = await getHeaderAndStore();
     delete product.codigo;
     delete product.attributes;
     product.published = true;
@@ -85,14 +138,12 @@ async function preparingGetProductsOnSaurus(parameters, password) {
   }
   
   async function preparingPostCategory(category) {
-    const infosNuvem = await getHeaderAndStore();
     const body = { name: category };
     const id = await registerCategory(infosNuvem[0], infosNuvem[1], body, 'category', category);
     return id ?? null;
   }
   
   async function preparingPostSubCategory(category, subcategory, category_id) {
-    const infosNuvem = await getHeaderAndStore();
     const body = {
       name: subcategory,
       parent: category_id,
@@ -102,31 +153,27 @@ async function preparingGetProductsOnSaurus(parameters, password) {
   }
   
   async function preparingPostVariation(variant, idProduct, idProductSaurus) {
-    const infosNuvem = await getHeaderAndStore();
     delete variant.codigo;
     await registerVariation(infosNuvem[0], infosNuvem[1], variant, idProduct, idProductSaurus);
   }
   
   async function preparingUpdateVariation(variant, idVariant, idProduct, idProductSaurus) {
-    const infosNuvem = await getHeaderAndStore();
     delete variant.codigo;
     await updateVariation(infosNuvem[0], infosNuvem[1], variant, idProduct, idVariant, idProductSaurus);
   }
   
   async function preparingDeleteVariation(idVariant, idProduct, idProductSaurus, grade, stockProduct) {
-    const infosNuvem = await getHeaderAndStore();
     await deleteVariation(infosNuvem[0], infosNuvem[1], idProduct, idVariant, idProductSaurus, grade, stockProduct);
   }
 
   /*
   async function preparingDeletePermanentVariant(idproduct, idvariant) {
-    const infosNuvem = await getHeaderAndStore();
+    
     await deleteVariation(infosNuvem[0], infosNuvem[1], idproduct, idvariant);
   }
   */
 
   async function preparingUploadImage(image, idProductNuvem, idProductSaurus, hash) {
-    const infosNuvem = await getHeaderAndStore();
     const body = {
       "filename": "image",
       "position": 1,
@@ -138,7 +185,6 @@ async function preparingGetProductsOnSaurus(parameters, password) {
   }
 
   async function preparingDeleteImage(idProductNuvem, idImageNuvem, idProductSaurus) {
-    const infosNuvem = await getHeaderAndStore();
     await deleteImage(infosNuvem[0], infosNuvem[1], idProductNuvem, idImageNuvem, idProductSaurus);
   }
 
@@ -155,6 +201,7 @@ async function preparingGetProductsOnSaurus(parameters, password) {
   }
   
   module.exports = {
+    returnPasswordWSSaurus,
     preparingGetProductsOnSaurus,
     preparingPostProduct,
     preparingUpdateProduct,

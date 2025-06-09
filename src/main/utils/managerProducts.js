@@ -1,9 +1,7 @@
-const axios = require('axios');
 const fs = require ('fs')
 const path = require('node:path')
-const { app } = require('electron')
 
-const { preparingPostProduct , preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
+const { preparingGetProductsOnSaurus, preparingPostProduct , preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
 const { returnCategoryId } = require('./managerCategories.js');
 const { requireAllVariationsOfAProduct } = require('./managerVariations.js')
 const { registerOrUpdateImage } = require('./managerImages.js')
@@ -18,7 +16,7 @@ async function requireAllProducts(config){
     return new Promise(async(resolve, reject) => {
         try {
 
-            console.log('oi')
+            await preparingGetProductsOnSaurus('1968-08-30T00:00:00-03:00', 1)
        /*
            await returnPasswordWSSaurus()
            .then(response => {

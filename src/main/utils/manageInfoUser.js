@@ -1,6 +1,5 @@
 const util = require('util');
 const fs = require('fs');
-const { app } = require('electron')
 const path = require('node:path')
 
 const readFileAsync = util.promisify(fs.readFile);

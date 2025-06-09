@@ -1,6 +1,7 @@
 const fs = require('fs')
-const { app } = require('electron')
-const path = require('node:path')
+const { Readable } = require('stream');
+const unzipper = require('unzipper');
+const path = require('node:path');
 
 const { returnInfo } = require('../envManager');
 const { returnValueFromJson } = require('./manageInfoUser');
@@ -324,6 +325,40 @@ function copyJsonFilesToUserData() {
 }
 
 
+async function returnNumberCodeOfPasswordSaurus(){
+  const now = new Date();
+  let number = now.getDay() + now.getMonth() + (now.getFullYear() - 2000);
+  return number;
+}
+
+async function encodedStringInBase64(input){
+   return Buffer.from(input, 'utf-8').toString('base64');
+}
+
+async function decodeBase64inFileAndUnizp(base64String){
+  const buffer = Buffer.from(base64String, 'base64');
+  const stream = Readable.from(buffer);
+
+  const directory = stream.pipe(unzipper.Parse());
+
+  for await (const entry of directory) {
+    const chunks = [];
+    for await (const chunk of entry) {
+      chunks.push(chunk);
+    }
+
+    return {
+      path: entry.path,
+      content: Buffer.concat(chunks).toString(), // conteúdo em texto
+    };
+  }
+
+  throw new Error('Nenhum arquivo encontrado no ZIP.');
+}
+
+
+
+
 module.exports = {
     findProductKeyByIdNuvemShopAsync,
     copyJsonFilesToUserData,
@@ -332,5 +367,8 @@ module.exports = {
     saveNewUniqueIdInProduct,
     deleteErrorsRecords,
     getActualDatetime,
-    gravarLog
+    gravarLog,
+    returnNumberCodeOfPasswordSaurus,
+    encodedStringInBase64,
+    decodeBase64inFileAndUnizp
 }

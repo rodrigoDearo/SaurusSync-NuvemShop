@@ -6,10 +6,11 @@ async function getProducts(body, header){
     return new Promise(async (resolve, reject) => {
         axios.post('https://wscadastros.saurus.net.br/v001/serviceCadastros.asmx', body, { header })
         .then(async (answer) => {
-            resolve(answer.data)
+            console.log(answer.response.data);
+            
         })
         .catch(async (error) => {
-            resolve()
+            console.log(error)
         })
     })
 }
