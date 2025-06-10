@@ -326,8 +326,13 @@ function copyJsonFilesToUserData() {
 
 
 async function returnNumberCodeOfPasswordSaurus(){
-  const now = new Date();
-  let number = now.getDay() + now.getMonth() + (now.getFullYear() - 2000);
+  const now = new Date.UTC();
+  let number = now.getDay() + now.getMonth() + (now.getFullYear() - 1999);
+  
+  console.log('Day > ' + now.getDay())
+  console.log('Month > ' + now.getMonth())
+  console.log('Year > ' + now.getFullYear())
+
   return number;
 }
 
