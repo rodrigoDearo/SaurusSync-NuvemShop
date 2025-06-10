@@ -1,5 +1,5 @@
 const { getProductsAndVariants, registerProduct, updateProduct, deleteProduct, deleteProductPermanent, undeleteProduct, registerCategory, deleteCategory, getVariants, registerVariation, updateVariation, deleteVariation, uploadImage, deleteImage, generateToken } = require('./requestsNuvemShop');
-const { getProducts } = require('./requestsSaurus.js');
+const { getProducts, getStockProduct } = require('./requestsSaurus.js');
 const { returnValueFromJson } = require('./manageInfoUser');
 const { returnInfo } = require('../envManager');
 const { returnNumberCodeOfPasswordSaurus, encodedStringInBase64, decodeBase64inFileAndUnizp, stringToXmlObject } = require('./auxFunctions.js');
@@ -25,7 +25,7 @@ async function returnPasswordWSSaurus() {
 }
 
 
-async function returnParametersWSSaurus(data, tpSync){
+async function returnParametersReqCadastros(data, tpSync){
   try {
     
     const dominio = await returnValueFromJson('dominiosaurus');
@@ -49,6 +49,25 @@ async function returnParametersWSSaurus(data, tpSync){
 }
 
 
+async function returnParametersRetProduto(idProduct){
+  try {
+    const dominio = await returnValueFromJson('dominiosaurus');
+
+    const parameters = `<xmlIntegracao>
+        <Dominio>${dominio}</Dominio>
+        <IdProduto>${idProduct}</IdProduto>
+    </xmlIntegracao>`
+
+    const encoded = await encodedStringInBase64(parameters);
+
+    return encoded
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+
 async function preparingGetProductsOnSaurus(data, tpSync) {
     const headers = {
           'Content-Type': 'text/xml; charset=utf-8',
@@ -57,7 +76,7 @@ async function preparingGetProductsOnSaurus(data, tpSync) {
 
 
     const password = await returnPasswordWSSaurus()
-    const parameters = await returnParametersWSSaurus(data, tpSync)
+    const parameters = await returnParametersReqCadastros(data, tpSync)
     
     if(!password || !parameters){
       return null
@@ -74,11 +93,46 @@ async function preparingGetProductsOnSaurus(data, tpSync) {
         </soap:Envelope>`
 
     await getProducts(body, headers)
-    .then(async (response) => {
-//      let xml = await decodeBase64inFileAndUnizp()
+    .then(async () => {
+      console.log('Produtos consultados com sucesso no WebService da Saurus');
     })
     .catch(async () => {
+      console.log('Erro ao consultar produtos no WebService da Saurus');
+    })
+  }
 
+
+async function preparingGetStockProductsOnSaurus(idproduct) {
+    const headers = {
+          'Content-Type': 'text/xml; charset=utf-8',
+          'SOAPAction': 'http://saurus.net.br/retProduto',
+          'Host': 'wsretaguarda.saurus.net.br'
+        }
+
+
+    const password = await returnPasswordWSSaurus()
+    const parameters = await returnParametersRetProduto(idproduct)
+    
+    if(!password || !parameters){
+      return null
+    }
+
+    const body = `<?xml version="1.0" encoding="utf-8"?>
+        <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+          <soap:Body>
+            <retProduto xmlns="http://saurus.net.br/">
+              <xBytesParametros>${parameters}</xBytesParametros>
+              <xSenha>${password}</xSenha>
+            </retProduto>
+          </soap:Body>
+        </soap:Envelope>`
+
+    await getStockProduct(body, headers, idproduct)
+    .then(async () => {
+      console.log('Estoque de produto consultado com sucesso no WebService da Saurus');
+    })
+    .catch(async () => {
+      console.log('Erro ao consultar estoque de produto no WebService da Saurus');
     })
   }
 
@@ -201,8 +255,8 @@ async function preparingGetProductsOnSaurus(data, tpSync) {
   }
   
   module.exports = {
-    returnPasswordWSSaurus,
     preparingGetProductsOnSaurus,
+    preparingGetStockProductsOnSaurus,
     preparingPostProduct,
     preparingUpdateProduct,
     preparingDeleteProduct,

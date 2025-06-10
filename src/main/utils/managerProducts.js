@@ -1,7 +1,7 @@
 const fs = require ('fs')
 const path = require('node:path')
 
-const { preparingGetProductsOnSaurus, preparingPostProduct , preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
+const { preparingGetProductsOnSaurus, preparingGetStockProductsOnSaurus, preparingPostProduct , preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
 const { returnCategoryId } = require('./managerCategories.js');
 const { requireAllVariationsOfAProduct } = require('./managerVariations.js')
 const { registerOrUpdateImage } = require('./managerImages.js')
@@ -16,7 +16,8 @@ async function requireAllProducts(config){
     return new Promise(async(resolve, reject) => {
         try {
 
-            await preparingGetProductsOnSaurus('1968-08-30T00:00:00-03:00', 1)
+            await preparingGetStockProductsOnSaurus('23280')
+          //  await preparingGetProductsOnSaurus('1968-08-30T00:00:00-03:00', 1)
        /*
            await returnPasswordWSSaurus()
            .then(response => {

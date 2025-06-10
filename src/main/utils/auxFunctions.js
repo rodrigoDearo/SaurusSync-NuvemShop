@@ -1,6 +1,6 @@
 const fs = require('fs')
 const { Readable } = require('stream');
-const unzipper = require('unzipper');
+const zlib = require('zlib');
 const path = require('node:path');
 
 const { returnInfo } = require('../envManager');
@@ -326,42 +326,52 @@ function copyJsonFilesToUserData() {
 
 
 async function returnNumberCodeOfPasswordSaurus(){
-  const now = new Date.UTC();
-  let number = now.getDay() + now.getMonth() + (now.getFullYear() - 1999);
-  
-  console.log('Day > ' + now.getDay())
-  console.log('Month > ' + now.getMonth())
-  console.log('Year > ' + now.getFullYear())
+  const now = new Date();
+
+
+  let number = now.getDate() + now.getMonth() + (now.getFullYear() - 1999);
 
   return number;
 }
+
+
 
 async function encodedStringInBase64(input){
    return Buffer.from(input, 'utf-8').toString('base64');
 }
 
-async function decodeBase64inFileAndUnizp(base64String){
-  const buffer = Buffer.from(base64String, 'base64');
-  const stream = Readable.from(buffer);
 
-  const directory = stream.pipe(unzipper.Parse());
+async function saveDecodedXmlFromBase64ZipReqCadastros(base64String) {
+    const now = new Date();
+    const xmlDir = path.join(userDataPath, 'XMLs', 'cadastros');
 
-  for await (const entry of directory) {
-    const chunks = [];
-    for await (const chunk of entry) {
-      chunks.push(chunk);
+    if (!fs.existsSync(xmlDir)) {
+        fs.mkdirSync(xmlDir, { recursive: true });
     }
+    const buffer = Buffer.from(base64String, 'base64');
+    const xmlContent = zlib.gunzipSync(buffer);
 
-    return {
-      path: entry.path,
-      content: Buffer.concat(chunks).toString(), // conteúdo em texto
-    };
-  }
-
-  throw new Error('Nenhum arquivo encontrado no ZIP.');
+    const xmlFile = `reqCadastros-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.xml`;
+    const xmlPath = path.join(xmlDir, xmlFile);
+    fs.writeFileSync(xmlPath, xmlContent);
+    return xmlPath;
 }
 
+async function saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct) {
+    const now = new Date();
+    const xmlDir = path.join(userDataPath, 'XMLs', 'estoques');
 
+    if (!fs.existsSync(xmlDir)) {
+        fs.mkdirSync(xmlDir, { recursive: true });
+    }
+    const buffer = Buffer.from(base64String, 'base64');
+    const xmlContent = zlib.gunzipSync(buffer);
+
+    const xmlFile = `${idProduct}.xml`;
+    const xmlPath = path.join(xmlDir, xmlFile);
+    fs.writeFileSync(xmlPath, xmlContent);
+    return xmlPath;
+}
 
 
 module.exports = {
@@ -375,5 +385,6 @@ module.exports = {
     gravarLog,
     returnNumberCodeOfPasswordSaurus,
     encodedStringInBase64,
-    decodeBase64inFileAndUnizp
+    saveDecodedXmlFromBase64ZipReqCadastros,
+    saveDecodedXmlFromBase64ZipRetProdutoEstoque
 }
