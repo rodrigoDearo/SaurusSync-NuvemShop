@@ -15,8 +15,8 @@ async function getProducts(body, header){
 
                 const base64String = result['soap:Envelope']['soap:Body'][0]['retCadastrosResponse'][0]['retCadastrosResult'][0]
                 
-                await saveDecodedXmlFromBase64ZipReqCadastros(base64String);
-                resolve();
+                const xmlPath = await saveDecodedXmlFromBase64ZipReqCadastros(base64String);
+                resolve(xmlPath);
             });
         })
         .catch(async (error) => {
@@ -39,8 +39,8 @@ async function getStockProduct(body, header, idProduct){
 
                 const base64String = result['soap:Envelope']['soap:Body'][0]['retProdutoResponse'][0]['retProdutoResult'][0];
 
-                await saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct);
-                resolve();
+                const xmlPath = await saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct);
+                resolve();xmlPath
             });
         })
         .catch(async (error) => {

@@ -1,5 +1,6 @@
 const fs = require ('fs')
 const path = require('node:path')
+const xml2js = require('xml2js');
 
 const { preparingGetProductsOnSaurus, preparingGetStockProductsOnSaurus, preparingPostProduct , preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
 const { returnCategoryId } = require('./managerCategories.js');
@@ -16,8 +17,32 @@ async function requireAllProducts(config){
     return new Promise(async(resolve, reject) => {
         try {
 
-            await preparingGetStockProductsOnSaurus('23280')
-          //  await preparingGetProductsOnSaurus('1968-08-30T00:00:00-03:00', 1)
+            await preparingGetProductsOnSaurus('1968-08-30T00:00:00-03:00', 1)
+            .then(async (response) => {
+                    let pathXmlProducts = response;
+
+                    xml2js.parseString(fs.readFileSync(pathXmlProducts), async(error, result) => {
+
+                    let products = result['cadastros']['tbProdutoDados'][0]['row']
+
+                    for(let i=0; i<products.length; i++){
+                        let product = products[i];
+                        //ao inves de for fazer fun recursiva para ler todos os produtos, realizar um getRequest e após isso salvsr na pasta XMLs/estoque
+                    }
+                })
+            })
+
+            
+            //deletar todos os arquivos da pasta estoque
+            //ler o xml indicado no caminho
+            //ler todos os produtos esalvar o get productSotck
+            //casoo o produto seja variação indicar nome do arquivo o produto - variação
+            //ler todos os arqquivos, em cada arquivo é um produto
+            //segue tratamento padrão, deletar, atualizar ou cadastrar
+
+
+
+
        /*
            await returnPasswordWSSaurus()
            .then(response => {

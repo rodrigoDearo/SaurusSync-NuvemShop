@@ -354,11 +354,11 @@ async function saveDecodedXmlFromBase64ZipReqCadastros(base64String) {
     const xmlFile = `reqCadastros-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.xml`;
     const xmlPath = path.join(xmlDir, xmlFile);
     fs.writeFileSync(xmlPath, xmlContent);
+
     return xmlPath;
 }
 
 async function saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct) {
-    const now = new Date();
     const xmlDir = path.join(userDataPath, 'XMLs', 'estoques');
 
     if (!fs.existsSync(xmlDir)) {
@@ -370,6 +370,7 @@ async function saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProd
     const xmlFile = `${idProduct}.xml`;
     const xmlPath = path.join(xmlDir, xmlFile);
     fs.writeFileSync(xmlPath, xmlContent);
+
     return xmlPath;
 }
 

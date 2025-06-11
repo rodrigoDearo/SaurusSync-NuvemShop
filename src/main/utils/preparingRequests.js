@@ -68,21 +68,22 @@ async function returnParametersRetProduto(idProduct){
 }
 
 
-async function preparingGetProductsOnSaurus(data, tpSync) {
-    const headers = {
-          'Content-Type': 'text/xml; charset=utf-8',
-          'SOAPAction': 'http://saurus.net.br/retCadastros'
-        }
+function preparingGetProductsOnSaurus(data, tpSync) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const headers = {
+        'Content-Type': 'text/xml; charset=utf-8',
+        'SOAPAction': 'http://saurus.net.br/retCadastros'
+      };
 
+      const password = await returnPasswordWSSaurus();
+      const parameters = await returnParametersReqCadastros(data, tpSync);
 
-    const password = await returnPasswordWSSaurus()
-    const parameters = await returnParametersReqCadastros(data, tpSync)
-    
-    if(!password || !parameters){
-      return null
-    }
+      if (!password || !parameters) {
+        return resolve(null);
+      }
 
-    const body = `<?xml version="1.0" encoding="utf-8"?>
+      const body = `<?xml version="1.0" encoding="utf-8"?>
         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
           <soap:Body>
             <retCadastros xmlns="http://saurus.net.br/">
@@ -90,16 +91,23 @@ async function preparingGetProductsOnSaurus(data, tpSync) {
               <xSenha>${password}</xSenha>
             </retCadastros>
           </soap:Body>
-        </soap:Envelope>`
+        </soap:Envelope>`;
 
-    await getProducts(body, headers)
-    .then(async () => {
-      console.log('Produtos consultados com sucesso no WebService da Saurus');
-    })
-    .catch(async () => {
-      console.log('Erro ao consultar produtos no WebService da Saurus');
-    })
-  }
+      getProducts(body, headers)
+        .then((xmlPath) => {
+          console.log('Produtos consultados com sucesso no WebService da Saurus');
+          resolve(xmlPath);
+        })
+        .catch(() => {
+          console.log('Erro ao consultar produtos no WebService da Saurus');
+          resolve(null);
+        });
+    } catch (error) {
+      console.error(error);
+      resolve(null);
+    }
+  });
+}
 
 
 async function preparingGetStockProductsOnSaurus(idproduct) {
@@ -128,8 +136,9 @@ async function preparingGetStockProductsOnSaurus(idproduct) {
         </soap:Envelope>`
 
     await getStockProduct(body, headers, idproduct)
-    .then(async () => {
+    .then(async (xmlPath) => {
       console.log('Estoque de produto consultado com sucesso no WebService da Saurus');
+      return xmlPath
     })
     .catch(async () => {
       console.log('Erro ao consultar estoque de produto no WebService da Saurus');
