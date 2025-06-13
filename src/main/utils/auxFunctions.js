@@ -359,7 +359,8 @@ async function saveDecodedXmlFromBase64ZipReqCadastros(base64String) {
 }
 
 async function saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct) {
-    const xmlDir = path.join(userDataPath, 'XMLs', 'estoques');
+  
+    const xmlDir = path.join(userDataPath, 'XMLs', 'products');
 
     if (!fs.existsSync(xmlDir)) {
         fs.mkdirSync(xmlDir, { recursive: true });

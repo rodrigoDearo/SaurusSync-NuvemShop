@@ -40,7 +40,7 @@ async function getStockProduct(body, header, idProduct){
                 const base64String = result['soap:Envelope']['soap:Body'][0]['retProdutoResponse'][0]['retProdutoResult'][0];
 
                 const xmlPath = await saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct);
-                resolve();xmlPath
+                resolve(xmlPath);
             });
         })
         .catch(async (error) => {

@@ -25,10 +25,14 @@ async function requireAllProducts(config){
 
                     let products = result['cadastros']['tbProdutoDados'][0]['row']
 
-                    for(let i=0; i<products.length; i++){
-                        let product = products[i];
-                        //ao inves de for fazer fun recursiva para ler todos os produtos, realizar um getRequest e após isso salvsr na pasta XMLs/estoque
+                    async function processProductsRecursively(products, index = 0) {
+                        if (index >= products.length) return;
+                        console.log(products[index]['$'].pro_idProduto);
+                        setTimeout(() => {
+                            processProductsRecursively(products, index + 1);
+                        }, 1500);
                     }
+                    processProductsRecursively(products);
                 })
             })
 
@@ -41,26 +45,6 @@ async function requireAllProducts(config){
             //segue tratamento padrão, deletar, atualizar ou cadastrar
 
 
-
-
-       /*
-           await returnPasswordWSSaurus()
-           .then(response => {
-            console.log(response)
-           })
-  
-            db.query(codigoSQL, async function (err, result){
-                if (err)
-                    resolve({code: 500, msg:'ERRO AO CONSULTAR TABELA PRODUTOS, CONTATAR SUPORTE TECNICO'});
-                
-                await readingAllRecordProducts(result, 0)
-                .then(() => {
-                    resolve({code: 200, msg:'PRODUTOS CONSULTADOS COM SUCESSO'});
-                })
-                
-            });
-          
-     */
       } catch (error) {
         reject(error);
       }
