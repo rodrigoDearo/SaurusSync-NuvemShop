@@ -358,13 +358,19 @@ async function saveDecodedXmlFromBase64ZipReqCadastros(base64String) {
     return xmlPath;
 }
 
-async function saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct) {
-  
-    const xmlDir = path.join(userDataPath, 'XMLs', 'products');
+async function saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct,  idProductFather) {
+    let xmlDir;
+
+    if(idProductFather){ // thats mean it's a variation
+      xmlDir = path.join(userDataPath, 'XMLs', 'products', 'variations', `${idProductFather}`);
+    }else{
+      xmlDir = path.join(userDataPath, 'XMLs', 'products');
+    }
 
     if (!fs.existsSync(xmlDir)) {
         fs.mkdirSync(xmlDir, { recursive: true });
     }
+
     const buffer = Buffer.from(base64String, 'base64');
     const xmlContent = zlib.gunzipSync(buffer);
 
@@ -374,6 +380,24 @@ async function saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProd
 
     return xmlPath;
 }
+
+
+async function clearFolderXMLProductsRecursive() {
+    let dirPath = path.join(userDataPath, 'XMLs', 'products');
+
+    if (!fs.existsSync(dirPath)) return;
+
+    fs.readdirSync(dirPath).forEach((file) => {
+        const curPath = path.join(dirPath, file);
+        if (fs.lstatSync(curPath).isDirectory()) {
+            clearDirectoryRecursive(curPath);
+            fs.rmdirSync(curPath);
+        } else {
+            fs.unlinkSync(curPath);
+        }
+    });
+}
+
 
 
 module.exports = {
@@ -388,5 +412,6 @@ module.exports = {
     returnNumberCodeOfPasswordSaurus,
     encodedStringInBase64,
     saveDecodedXmlFromBase64ZipReqCadastros,
-    saveDecodedXmlFromBase64ZipRetProdutoEstoque
+    saveDecodedXmlFromBase64ZipRetProdutoEstoque,
+    clearFolderXMLProductsRecursive
 }

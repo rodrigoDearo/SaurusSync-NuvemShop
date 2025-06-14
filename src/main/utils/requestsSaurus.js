@@ -27,7 +27,7 @@ async function getProducts(body, header){
 }
 
 
-async function getStockProduct(body, header, idProduct){
+async function getStockProduct(body, header, idProduct, idProductFather) {
     return new Promise(async (resolve, reject) => {
         axios.post('https://wsretaguarda.saurus.net.br/v001/serviceRetaguarda.asmx', body, { headers: header })
         .then(async (answer) => {
@@ -39,7 +39,7 @@ async function getStockProduct(body, header, idProduct){
 
                 const base64String = result['soap:Envelope']['soap:Body'][0]['retProdutoResponse'][0]['retProdutoResult'][0];
 
-                const xmlPath = await saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct);
+                const xmlPath = await saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProduct, idProductFather);
                 resolve(xmlPath);
             });
         })

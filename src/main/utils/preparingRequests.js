@@ -110,7 +110,7 @@ function preparingGetProductsOnSaurus(data, tpSync) {
 }
 
 
-async function preparingGetStockProductsOnSaurus(idproduct) {
+async function preparingGetStockProductsOnSaurus(idproduct, idProdctFather) {
     const headers = {
           'Content-Type': 'text/xml; charset=utf-8',
           'SOAPAction': 'http://saurus.net.br/retProduto',
@@ -135,7 +135,7 @@ async function preparingGetStockProductsOnSaurus(idproduct) {
           </soap:Body>
         </soap:Envelope>`
 
-    await getStockProduct(body, headers, idproduct)
+    await getStockProduct(body, headers, idproduct, idProdctFather)
     .then(async (xmlPath) => {
       console.log('Estoque de produto consultado com sucesso no WebService da Saurus');
       return xmlPath

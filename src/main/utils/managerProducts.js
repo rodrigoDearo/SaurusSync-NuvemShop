@@ -6,7 +6,7 @@ const { preparingGetProductsOnSaurus, preparingGetStockProductsOnSaurus, prepari
 const { returnCategoryId } = require('./managerCategories.js');
 const { requireAllVariationsOfAProduct } = require('./managerVariations.js')
 const { registerOrUpdateImage } = require('./managerImages.js')
-const { findProductKeyByIdNuvemShopAsync, gravarLog } = require('./auxFunctions.js')
+const { clearFolderXMLProductsRecursive, findProductKeyByIdNuvemShopAsync, gravarLog } = require('./auxFunctions.js')
 
 const userDataPath = 'src/build';
 //const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
@@ -16,6 +16,7 @@ const pathProducts = path.join(userDataPath, 'products.json');
 async function requireAllProducts(config){
     return new Promise(async(resolve, reject) => {
         try {
+            await clearFolderXMLProductsRecursive();
 
             await preparingGetProductsOnSaurus('1968-08-30T00:00:00-03:00', 1)
             .then(async (response) => {
@@ -27,9 +28,15 @@ async function requireAllProducts(config){
 
                     async function processProductsRecursively(products, index = 0) {
                         if (index >= products.length) return;
-                        console.log(products[index]['$'].pro_idProduto);
+
+                        let idProduct = products[index]['$'].pro_idProduto;
+                        let idProdctFather = products[index]['$'].pro_idProdutoPai;
+
                         setTimeout(() => {
-                            processProductsRecursively(products, index + 1);
+                            preparingGetStockProductsOnSaurus(idProduct, idProdctFather)
+                            .then(() => {
+                                processProductsRecursively(products, index + 1);
+                            })
                         }, 1500);
                     }
                     processProductsRecursively(products);
@@ -43,6 +50,7 @@ async function requireAllProducts(config){
             //casoo o produto seja variação indicar nome do arquivo o produto - variação
             //ler todos os arqquivos, em cada arquivo é um produto
             //segue tratamento padrão, deletar, atualizar ou cadastrar
+            //** função para ler os produtos do xml
 
 
       } catch (error) {
