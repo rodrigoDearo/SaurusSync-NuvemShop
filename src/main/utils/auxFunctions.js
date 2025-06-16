@@ -382,20 +382,34 @@ async function saveDecodedXmlFromBase64ZipRetProdutoEstoque(base64String, idProd
 }
 
 
+function clearDirectoryRecursive(dirPath) {
+  if (!fs.existsSync(dirPath)) return;
+
+  fs.readdirSync(dirPath).forEach((file) => {
+    const curPath = path.join(dirPath, file);
+    if (fs.lstatSync(curPath).isDirectory()) {
+      clearDirectoryRecursive(curPath);
+      fs.rmdirSync(curPath);
+    } else {
+      fs.unlinkSync(curPath);
+    }
+  });
+}
+
 async function clearFolderXMLProductsRecursive() {
-    let dirPath = path.join(userDataPath, 'XMLs', 'products');
+  let dirPath = path.join(userDataPath, 'XMLs', 'products');
 
-    if (!fs.existsSync(dirPath)) return;
+  if (!fs.existsSync(dirPath)) return;
 
-    fs.readdirSync(dirPath).forEach((file) => {
-        const curPath = path.join(dirPath, file);
-        if (fs.lstatSync(curPath).isDirectory()) {
-            clearDirectoryRecursive(curPath);
-            fs.rmdirSync(curPath);
-        } else {
-            fs.unlinkSync(curPath);
-        }
-    });
+  fs.readdirSync(dirPath).forEach((file) => {
+    const curPath = path.join(dirPath, file);
+    if (fs.lstatSync(curPath).isDirectory()) {
+      clearDirectoryRecursive(curPath);
+      fs.rmdirSync(curPath);
+    } else {
+      fs.unlinkSync(curPath);
+    }
+  });
 }
 
 

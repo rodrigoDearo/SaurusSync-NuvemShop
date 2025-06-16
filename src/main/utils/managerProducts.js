@@ -6,7 +6,8 @@ const { preparingGetProductsOnSaurus, preparingGetStockProductsOnSaurus, prepari
 const { returnCategoryId } = require('./managerCategories.js');
 const { requireAllVariationsOfAProduct } = require('./managerVariations.js')
 const { registerOrUpdateImage } = require('./managerImages.js')
-const { clearFolderXMLProductsRecursive, findProductKeyByIdNuvemShopAsync, gravarLog } = require('./auxFunctions.js')
+const { clearFolderXMLProductsRecursive, findProductKeyByIdNuvemShopAsync, gravarLog } = require('./auxFunctions.js');
+const { resolveMx } = require('node:dns');
 
 const userDataPath = 'src/build';
 //const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
@@ -16,42 +17,75 @@ const pathProducts = path.join(userDataPath, 'products.json');
 async function requireAllProducts(config){
     return new Promise(async(resolve, reject) => {
         try {
+            
             await clearFolderXMLProductsRecursive();
 
             await preparingGetProductsOnSaurus('1968-08-30T00:00:00-03:00', 1)
             .then(async (response) => {
-                    let pathXmlProducts = response;
+                let pathXmlProducts = response;
 
-                    xml2js.parseString(fs.readFileSync(pathXmlProducts), async(error, result) => {
+                await new Promise((resolve, reject) => {
+                    xml2js.parseString(fs.readFileSync(pathXmlProducts), async (error, result) => {
+                        if (error) return rejectParse(error);
 
-                    let products = result['cadastros']['tbProdutoDados'][0]['row']
+                        let products = result['cadastros']['tbProdutoDados'][0]['row'];
 
-                    async function processProductsRecursively(products, index = 0) {
-                        if (index >= products.length) return;
+                        async function processProductsRecursively(products, index = 0) {
+                            if (index >= products.length) return;
+                            let idProduct = products[index]['$'].pro_idProduto;
+                            let idProdctFather = products[index]['$'].pro_idProdutoPai;
 
-                        let idProduct = products[index]['$'].pro_idProduto;
-                        let idProdctFather = products[index]['$'].pro_idProdutoPai;
+                            await new Promise(res => setTimeout(res, 1500));
+                            await preparingGetStockProductsOnSaurus(idProduct, idProdctFather);
+                            await processProductsRecursively(products, index + 1);
+                        }
+                        await processProductsRecursively(products);
+                        resolveParse();
+                    });
+                });
+            })
+            .then(async () => {
+                
+            
+                await new Promise(async (resolve, reject) => {
+                    let dirPath = path.join(userDataPath, 'XMLs', 'products');
+                    let productsXml;
+                    let arrayOfProducts = []
 
-                        setTimeout(() => {
-                            preparingGetStockProductsOnSaurus(idProduct, idProdctFather)
-                            .then(() => {
-                                processProductsRecursively(products, index + 1);
+                    if (!fs.existsSync(dirPath)) return [];
+                        productsXml= fs.readdirSync(dirPath).filter(file => fs.lstatSync(path.join(dirPath, file)).isFile());
+
+                    async function readingAllXMLsProductsAndFormatInJson(files, index=0){
+                        return new Promise(async (resolve, reject) => {
+                            if (index >= products.length) resolve();
+
+                            let pathXmlProduct = path.join(userDataPath, 'XMLs', 'products', files[index]);
+
+                            xml2js.parseString(fs.readFileSync(pathXmlProduct), async (error, response) => {
+
+                                let product = {
+                                    ID_PRODUTO: response['Produto']['ProdutoDados'].pro_idProduto,
+                                    PRODUTO: response['Produto']['ProdutoDados'].pro_descProduto,
+                                    DESCRICAO_COMPLEMENTAR: response['Produto']['ProdutoDados'].pro_infAdic,
+                                    VALOR_VENDA: response['Produto']['ProdutoPrecos'][0].pro_vPreco,
+                                    ESTOQUE: response['Produto']['ProdutoDados'].pro_idProduto,
+                                    MARCA: response['Produto']['ProdutoDados'].pro_idProduto,
+                                    STATUS: response['Produto']['ProdutoDados'].pro_idProduto,
+                                }
+
+                                arrayOfProducts.push(product)
                             })
-                        }, 1500);
+                        })
+                        
                     }
-                    processProductsRecursively(products);
+
+                    await readingAllXMLsProductsAndFormatInJson(productsXml, index + 1)
+                    .then(async () => {
+                        await readingAllRecordProducts(arrayOfProducts, 0)
+                    })
+
                 })
             })
-
-            
-
-            //ler todos os produtos esalvar o get productSotck
-            //casoo o produto seja variação indicar nome do arquivo o produto - variação
-            //ler todos os arqquivos, em cada arquivo é um produto
-            //segue tratamento padrão, deletar, atualizar ou cadastrar
-            //** função para ler os produtos do xml
-
-
       } catch (error) {
         reject(error);
       }
@@ -59,11 +93,6 @@ async function requireAllProducts(config){
 }
 
 
-
-async function readingAllXMLsProductsAndFormatInJson(){
-    return new Promise(async (resolve, reject) => {}
-
-}
 
 
 
