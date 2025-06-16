@@ -44,8 +44,7 @@ async function requireAllProducts(config){
             })
 
             
-            //deletar todos os arquivos da pasta estoque
-            //ler o xml indicado no caminho
+
             //ler todos os produtos esalvar o get productSotck
             //casoo o produto seja variação indicar nome do arquivo o produto - variação
             //ler todos os arqquivos, em cada arquivo é um produto
@@ -58,6 +57,14 @@ async function requireAllProducts(config){
       }
     })
 }
+
+
+
+async function readingAllXMLsProductsAndFormatInJson(){
+    return new Promise(async (resolve, reject) => {}
+
+}
+
 
 
 async function readingAllRecordProducts(productsRecords, index){
