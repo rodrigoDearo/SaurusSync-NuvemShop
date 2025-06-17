@@ -68,9 +68,9 @@ async function requireAllProducts(config){
                                     PRODUTO: response['Produto']['ProdutoDados'].pro_descProduto,
                                     DESCRICAO_COMPLEMENTAR: response['Produto']['ProdutoDados'].pro_infAdic,
                                     VALOR_VENDA: response['Produto']['ProdutoPrecos'][0].pro_vPreco,
-                                    ESTOQUE: response['Produto']['ProdutoDados'].pro_idProduto,
+                                    ESTOQUE: 0,
                                     MARCA: response['Produto']['ProdutoDados'].pro_idProduto,
-                                    STATUS: response['Produto']['ProdutoDados'].pro_idProduto,
+                                    STATUS: (response['Produto']['ProdutoDados'].pro_idProduto == 0 ? 'INATIVO' : 'ATIVO'),
                                 }
 
                                 arrayOfProducts.push(product)

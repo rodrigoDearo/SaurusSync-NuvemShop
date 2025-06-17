@@ -113,7 +113,7 @@ function preparingGetProductsOnSaurus(data, tpSync) {
 async function preparingGetStockProductsOnSaurus(idproduct, idProdctFather) {
     const headers = {
           'Content-Type': 'text/xml; charset=utf-8',
-          'SOAPAction': 'http://saurus.net.br/retProduto',
+          'SOAPAction': 'http://saurus.net.br/retProdutoEstoque',
           'Host': 'wsretaguarda.saurus.net.br'
         }
 
@@ -128,10 +128,10 @@ async function preparingGetStockProductsOnSaurus(idproduct, idProdctFather) {
     const body = `<?xml version="1.0" encoding="utf-8"?>
         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
           <soap:Body>
-            <retProduto xmlns="http://saurus.net.br/">
+            <retProdutoEstoque xmlns="http://saurus.net.br/">
               <xBytesParametros>${parameters}</xBytesParametros>
               <xSenha>${password}</xSenha>
-            </retProduto>
+            </retProdutoEstoque>
           </soap:Body>
         </soap:Envelope>`
 
