@@ -49,7 +49,7 @@ async function returnParametersReqCadastros(data, tpSync){
 }
 
 
-async function returnParametersRetProduto(idProduct){
+async function returnParametersRetProdutoEstoque(idProduct){
   try {
     const dominio = await returnValueFromJson('dominiosaurus');
 
@@ -119,7 +119,7 @@ async function preparingGetStockProductsOnSaurus(idproduct, idProdctFather) {
 
 
     const password = await returnPasswordWSSaurus()
-    const parameters = await returnParametersRetProduto(idproduct)
+    const parameters = await returnParametersRetProdutoEstoque(idproduct)
     
     if(!password || !parameters){
       return null
