@@ -113,7 +113,10 @@ async function readingAllXMLsProductsAndFormatInJson(records, index = 0, arrayJs
                 });
             }
 
-            const status = produto.pro_indStatus === '1' ? 'ATIVO' : 'INATIVO';
+            const status = produto.pro_indStatus === '1' ? 'ATIVO' : 'INATIVO'; 
+            const categoria = produto.pro_descCategoria == 'Sem Categoria' ? '' : produto.pro_descCategoria;
+            const subcategoria = produto.pro_descSubCategoria == 'Sem Subcategoria' ? '' : produto.pro_descSubCategoria;
+            const marca = produto.pro_descMarca == 'Sem Marca' ? '' : produto.pro_descMarca;
 
             const obj = {
                 ID_PRODUTO: idProduto,
@@ -121,10 +124,10 @@ async function readingAllXMLsProductsAndFormatInJson(records, index = 0, arrayJs
                 DESCRICAO_COMPLEMENTAR: produto.pro_infAdic ?? '',
                 VALOR_VENDA: preco,
                 ESTOQUE: estoque,
-                MARCA: produto.pro_descMarca ?? '',
+                MARCA: marca,
                 STATUS: status,
-                CATEGORIA: produto.pro_descCategoria ?? '',
-                SUBCATEGORIA: produto.pro_descSubCategoria ?? ''
+                CATEGORIA: categoria,
+                SUBCATEGORIA: subcategoria
             };
 
             arrayJson.push(obj);
