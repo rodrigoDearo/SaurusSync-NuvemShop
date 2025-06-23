@@ -454,7 +454,7 @@ async function deleteVariation(store_id, header, idproduct, idVariant, idProduct
         })    
     })
 }
-
+/*
 async function uploadImage(store_id, header, body, idProductNuvem, idProductHost, hash){
     return new Promise(async (resolve, reject) => {
         await axios.post(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idProductNuvem}/images`, body, header)
@@ -523,7 +523,7 @@ async function deleteImage(store_id, header, idProductNuvem, idImage, idProductH
             resolve()
         })    
     })
-}
+}*/
 
 
 // ---------------------------------------------------------------------
@@ -574,7 +574,5 @@ module.exports = {
     registerVariation,
     updateVariation,
     deleteVariation,
-    uploadImage,
-    deleteImage,
     generateToken
 }

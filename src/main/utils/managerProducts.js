@@ -41,18 +41,22 @@ async function requireAllProducts(config) {
 
                             async function processProductsRecursively(products, index = 0) {
                                 if (index >= products.length) return;
-                                let idProduct = products[index]['$'].pro_idProduto;
-                                let idProdctFather = products[index]['$'].pro_idProdutoPai;
 
-                                if (idProdctFather) {
-                                    await processProductsRecursively(products, index + 1);
-                                    return;
+                                let idProduct = products[index]['$'].pro_idProduto;
+                                let idProductFather = products[index]['$'].pro_idProdutoPai;
+
+                                if (!idProductFather) {
+                                    // Produto pai
+                                    await preparingGetStockProductsOnSaurus(idProduct, null);
+                                } else {
+                                    // Variação
+                                    await preparingGetStockProductsOnSaurus(idProduct, idProductFather);
                                 }
 
-                                await new Promise(res => setTimeout(res, 1500));
-                                await preparingGetStockProductsOnSaurus(idProduct, idProdctFather);
+                                await new Promise(res => setTimeout(res, 2000));
                                 await processProductsRecursively(products, index + 1);
                             }
+
                             await processProductsRecursively(products);
                             resolve();
                         });
@@ -61,8 +65,7 @@ async function requireAllProducts(config) {
                 .then(async () => {
                     readingAllXMLsProductsAndFormatInJson(recordsInReqCadastros)
                     .then(async (response) => {
-                        console.log(response)
-                        //await readingAllRecordProducts(response, 0)
+                        await readingAllRecordProducts(response, 0)
                     })
                     .then(() => {
                         resolve()
@@ -195,6 +198,7 @@ async function registerOrUpdateProduct(product) {
         let productsDB = JSON.parse(fs.readFileSync(pathProducts));
         let idProductHost = product.codigo;
         let stockProduct = product.stock;
+        let nameProduct = product.name;
 
         let justProduct = product.variants[0];
         let productAndVariants = product;
@@ -215,7 +219,7 @@ async function registerOrUpdateProduct(product) {
         if (!productAlreadyRegister && productIsActiveOnHost) {
             await preparingPostProduct(product)
                 .then(async () => {
-                    await requireAllVariationsOfAProduct(idProductHost, stockProduct)
+                    await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros)
                         .then(() => {
                             resolve();
                         });
@@ -226,7 +230,7 @@ async function registerOrUpdateProduct(product) {
             if (productIsActiveOnNuvem) {
                 await preparingUpdateProduct(IdProducAndVariants, productAndVariants)
                     .then(async () => {
-                        await requireAllVariationsOfAProduct(idProductHost, stockProduct);
+                        await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros);
                     })
                     .then(async () => {
                         let productsDBAtualizado = JSON.parse(fs.readFileSync(pathProducts));
@@ -243,7 +247,7 @@ async function registerOrUpdateProduct(product) {
             } else {
                 await preparingUndeleteProduct(product.codigo, IdProducAndVariants, productAndVariants)
                     .then(async () => {
-                        await requireAllVariationsOfAProduct(idProductHost, stockProduct)
+                        await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros)
                             .then(() => {
                                 resolve();
                             });

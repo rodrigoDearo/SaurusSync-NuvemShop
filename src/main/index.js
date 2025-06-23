@@ -4,7 +4,6 @@ const path = require('node:path')
 const { saveInfos, returnValueFromJson } = require('./utils/manageInfoUser.js')
 const { copyJsonFilesToUserData, gravarLog, deleteErrorsRecords } = require('./utils/auxFunctions.js')
 const { requireAllProducts } = require('./utils/managerProducts.js')
-// { readNewRecords } = require('./utils/managerSaurusTableNotify.js');
 const { preparingGenerateToken } = require('./utils/preparingRequests.js')
 
 var win;
@@ -90,34 +89,29 @@ ipcMain.handle('getInfoUser', async (events, args) => {
 ipcMain.handle('startProgram', async () => {
   gravarLog(' . . . Starting SaurusSync  . . .')
 
-  await mainProcess(true)
+  await mainProcess()
   .then((response) => {
     return response
   })
 })
 
-async function mainProcess(syncFull){
+async function mainProcess(){
   return new Promise(async (resolve, reject) => {
 
     await deleteErrorsRecords()
     .then(async () => {
-      if(syncFull){
-        let mensageReturn = await requireAllProducts()
-        if(mensageReturn.code == 500){
-          reject(mensageReturn)
-        }
-      }
+      await requireAllProducts()
     })
     .then(async () => {
       setInterval(async () => {
-        await readNewRecords(config)
+        await requireAllProducts()
         .then(() => {
           gravarLog('---------------------------------------------------------------------')
-          gravarLog('REALIZADO A LEITURA PERIODICA DA TABELA DE NOTIFICACOES')
+          gravarLog('REALIZADO A LEITURA PERIODICA')
           gravarLog('---------------------------------------------------------------------')
         })
       
-      }, 300000);
+      }, 1800000);
     })
 
     
