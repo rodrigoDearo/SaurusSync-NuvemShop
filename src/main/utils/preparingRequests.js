@@ -1,4 +1,4 @@
-const { getProductsAndVariants, registerProduct, updateProduct, deleteProduct, deleteProductPermanent, undeleteProduct, registerCategory, deleteCategory, getVariants, registerVariation, updateVariation, deleteVariation, uploadImage, deleteImage, generateToken } = require('./requestsNuvemShop');
+const { getProductsAndVariants, registerProduct, updateProduct, deleteProduct, deleteProductPermanent, undeleteProduct, registerCategory, registerVariation, updateVariation, deleteVariation, generateToken } = require('./requestsNuvemShop');
 const { getProducts, getStockProduct } = require('./requestsSaurus.js');
 const { returnValueFromJson } = require('./manageInfoUser');
 const { returnInfo } = require('../envManager');
@@ -243,8 +243,7 @@ async function preparingGetStockProductsOnSaurus(idproduct, idProdctFather) {
     
     await deleteVariation(infosNuvem[0], infosNuvem[1], idproduct, idvariant);
   }
-  */
-
+ 
   async function preparingUploadImage(image, idProductNuvem, idProductSaurus, hash) {
     const infosNuvem = await getHeaderAndStore();
     const body = {
@@ -260,7 +259,7 @@ async function preparingGetStockProductsOnSaurus(idproduct, idProdctFather) {
   async function preparingDeleteImage(idProductNuvem, idImageNuvem, idProductSaurus) {
     const infosNuvem = await getHeaderAndStore();
     await deleteImage(infosNuvem[0], infosNuvem[1], idProductNuvem, idImageNuvem, idProductSaurus);
-  }
+  }*/
 
   async function preparingGenerateToken(code) {
     const client_secret = await returnInfo('client_secret');
@@ -287,8 +286,8 @@ async function preparingGetStockProductsOnSaurus(idproduct, idProdctFather) {
     preparingPostVariation,
     preparingUpdateVariation,
     preparingDeleteVariation,
-    preparingUploadImage,
-    preparingDeleteImage,
+    //preparingUploadImage,
+    //preparingDeleteImage,
     preparingGenerateToken,
   };
   

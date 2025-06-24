@@ -2,20 +2,10 @@ const fs = require('fs');
 const path = require('node:path');
 const xml2js = require('xml2js');
 
-const {
-    preparingGetProductsOnSaurus,
-    preparingGetStockProductsOnSaurus,
-    preparingPostProduct,
-    preparingUpdateProduct,
-    preparingDeleteProduct,
-    preparingDeletePermanentProduct,
-    preparingUndeleteProduct,
-    preparingUpdateVariation
-} = require('./preparingRequests.js');
+const { preparingGetProductsOnSaurus, preparingGetStockProductsOnSaurus, preparingPostProduct, preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
 
 const { returnCategoryId } = require('./managerCategories.js');
 const { requireAllVariationsOfAProduct } = require('./managerVariations.js');
-// const { registerOrUpdateImage } = require('./managerImages.js')
 const { clearFolderXMLProductsRecursive, gravarLog } = require('./auxFunctions.js');
 
 const userDataPath = 'src/build';
@@ -23,7 +13,7 @@ const pathProducts = path.join(userDataPath, 'products.json');
 
 var recordsInReqCadastros;
 
-async function requireAllProducts(config) {
+async function requireAllProducts() {
     return new Promise(async (resolve, reject) => {
         try {
             await clearFolderXMLProductsRecursive();
@@ -70,7 +60,11 @@ async function requireAllProducts(config) {
                     .then(() => {
                         resolve()
                     })
-                });
+                })
+                .catch((error) => {
+                    console.log(error)
+                })
+
         } catch (error) {
             reject(error);
         }
@@ -116,7 +110,7 @@ async function readingAllXMLsProductsAndFormatInJson(records, index = 0, arrayJs
                 });
             }
 
-            const status = produto.pro_indStatus === '1' ? 'ATIVO' : 'INATIVO'; 
+            const status = produto.pro_indStatus == '1' ? 'ATIVO' : 'INATIVO'; 
             const categoria = produto.pro_descCategoria == 'Sem Categoria' ? '' : produto.pro_descCategoria;
             const subcategoria = produto.pro_descSubCategoria == 'Sem Subcategoria' ? '' : produto.pro_descSubCategoria;
             const marca = produto.pro_descMarca == 'Sem Marca' ? '' : produto.pro_descMarca;
@@ -138,6 +132,7 @@ async function readingAllXMLsProductsAndFormatInJson(records, index = 0, arrayJs
             resolve(await readingAllXMLsProductsAndFormatInJson(records, index + 1, arrayJson));
 
         } catch (error) {
+            console.log(error)
             reject(error);
         }
     });
@@ -145,124 +140,139 @@ async function readingAllXMLsProductsAndFormatInJson(records, index = 0, arrayJs
 
 async function readingAllRecordProducts(productsRecords, index) {
     return new Promise(async (resolve, reject) => {
-        let record = productsRecords[index];
-        let i = index + 1;
+        try {
+            let record = productsRecords[index];
+            let i = index + 1;
 
-        if (i > productsRecords.length) {
-            resolve();
-        } else {
-            let product = {
-                "codigo": record.ID_PRODUTO,
-                "name": record.PRODUTO,
-                "description": record.DESCRICAO_COMPLEMENTAR,
-                "attributes": [
-                    {
-                        "pt": 'Variação'
-                    }
-                ],
-                "variants": [
-                    {
-                        "price": parseFloat(String(record.VALOR_VENDA ?? '').replace(',', '.')).toFixed(2),
-                        "stock": parseInt(record.ESTOQUE)
-                    }
-                ],
-                "price": parseFloat(String(record.VALOR_VENDA ?? '').replace(',', '.')).toFixed(2),
-                "stock": parseInt(record.ESTOQUE),
-                "brand": record.MARCA,
-                "published": ((record.STATUS == 'ATIVO') && (parseInt(record.ESTOQUE) > 0)) ? true : false
-            };
+            if (i > productsRecords.length) {
+                resolve();
+            } else {
+                let product = {
+                    "codigo": record.ID_PRODUTO,
+                    "name": record.PRODUTO,
+                    "description": record.DESCRICAO_COMPLEMENTAR,
+                    "attributes": [
+                        {
+                            "pt": 'Variação'
+                        }
+                    ],
+                    "variants": [
+                        {
+                            "price": parseFloat(String(record.VALOR_VENDA ?? '').replace(',', '.')).toFixed(2),
+                            "stock": parseInt(record.ESTOQUE)
+                        }
+                    ],
+                    "price": parseFloat(String(record.VALOR_VENDA ?? '').replace(',', '.')).toFixed(2),
+                    "stock": parseInt(record.ESTOQUE),
+                    "brand": record.MARCA,
+                    "published": ((record.STATUS == '1') && (parseInt(record.ESTOQUE) > 0)) ? true : false
+                };
 
-            await returnCategoryId(record.CATEGORIA, record.SUBCATEGORIA)
-                .then(async (idCategory) => {
-                    if (idCategory) {
-                        product.categories = [idCategory];
-                    } else {
-                        product.categories = [];
-                    }
-                    await registerOrUpdateProduct(product);
-                })
-                .then(async () => {
-                    setTimeout(async () => {
-                        await readingAllRecordProducts(productsRecords, i)
-                            .then(() => {
-                                resolve();
-                            });
-                    }, 1500);
-                });
+                await returnCategoryId(record.CATEGORIA, record.SUBCATEGORIA)
+                    .then(async (idCategory) => {
+                        if (idCategory) {
+                            product.categories = [idCategory];
+                        } else {
+                            product.categories = [];
+                        }
+                        console.log(`Lendo produto > :${product.name}. Estoque: ${product.stock}. Status: ${record.STATUS}`)
+                        await registerOrUpdateProduct(product);
+                    })
+                    .then(async () => {
+                        setTimeout(async () => {
+                            await readingAllRecordProducts(productsRecords, i)
+                                .then(() => {
+                                    resolve();
+                                });
+                        }, 1500);
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                    })
+                    
+            }
+        } catch (error) {
+            console.log(error)
         }
+        
     });
 }
 
 async function registerOrUpdateProduct(product) {
     return new Promise(async (resolve, reject) => {
-        let productsDB = JSON.parse(fs.readFileSync(pathProducts));
-        let idProductHost = product.codigo;
-        let stockProduct = product.stock;
-        let nameProduct = product.name;
+        try {
+            let productsDB = JSON.parse(fs.readFileSync(pathProducts));
+            let idProductHost = product.codigo;
+            let stockProduct = product.stock;
+            let nameProduct = product.name;
 
-        let justProduct = product.variants[0];
-        let productAndVariants = product;
-        delete productAndVariants.variants;
+            let justProduct = product.variants[0];
+            let productAndVariants = product;
+            delete productAndVariants.variants;
 
-        var productAlreadyRegister = productsDB[`${product.codigo}`] ? true : false;
-        var productIsActiveOnHost = product.published;
+            var productAlreadyRegister = productsDB[`${product.codigo}`] ? true : false;
+            var productIsActiveOnHost = product.published;
 
-        const functionReturnStatusOnNuvem = () => { if (productAlreadyRegister) { return productsDB[`${product.codigo}`].status } else { return null } };
-        const functionReturnUniqueIdProductOnNuvem = () => { if (productAlreadyRegister) { return productsDB[`${product.codigo}`].UniqueId } else { return null } };
-        const functionReturnIdProductAndVariantsOnNuvem = () => { if (productAlreadyRegister) { return productsDB[`${product.codigo}`].idNuvemShop } else { return null } };
+            const functionReturnStatusOnNuvem = () => { if (productAlreadyRegister) { return productsDB[`${product.codigo}`].status } else { return null } };
+            const functionReturnUniqueIdProductOnNuvem = () => { if (productAlreadyRegister) { return productsDB[`${product.codigo}`].UniqueId } else { return null } };
+            const functionReturnIdProductAndVariantsOnNuvem = () => { if (productAlreadyRegister) { return productsDB[`${product.codigo}`].idNuvemShop } else { return null } };
 
-        var statusProductOnNuvem = await functionReturnStatusOnNuvem();
-        var productIsActiveOnNuvem = statusProductOnNuvem == 'ATIVO' ? true : false;
-        var UniqueIdProductOnNuvem = functionReturnUniqueIdProductOnNuvem();
-        var IdProducAndVariants = functionReturnIdProductAndVariantsOnNuvem();
+            var statusProductOnNuvem = await functionReturnStatusOnNuvem();
+            var productIsActiveOnNuvem = statusProductOnNuvem == 'ATIVO' ? true : false;
+            var UniqueIdProductOnNuvem = functionReturnUniqueIdProductOnNuvem();
+            var IdProducAndVariants = functionReturnIdProductAndVariantsOnNuvem();
 
-        if (!productAlreadyRegister && productIsActiveOnHost) {
-            await preparingPostProduct(product)
-                .then(async () => {
-                    await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros)
-                        .then(() => {
-                            resolve();
-                        });
-                });
-        } else if (!productAlreadyRegister && (!productIsActiveOnHost)) {
-            resolve();
-        } else if (productAlreadyRegister && productIsActiveOnHost) {
-            if (productIsActiveOnNuvem) {
-                await preparingUpdateProduct(IdProducAndVariants, productAndVariants)
-                    .then(async () => {
-                        await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros);
-                    })
-                    .then(async () => {
-                        let productsDBAtualizado = JSON.parse(fs.readFileSync(pathProducts));
-
-                        if (Object.keys(productsDBAtualizado[`${idProductHost}`].variations).length === 0) {
-                            await preparingUpdateVariation(justProduct, UniqueIdProductOnNuvem, IdProducAndVariants, idProductHost)
-                                .then(() => {
-                                    resolve();
-                                });
-                        } else {
-                            resolve();
-                        }
-                    });
-            } else {
-                await preparingUndeleteProduct(product.codigo, IdProducAndVariants, productAndVariants)
+            if (!productAlreadyRegister && productIsActiveOnHost) {
+                await preparingPostProduct(product)
                     .then(async () => {
                         await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros)
                             .then(() => {
                                 resolve();
                             });
                     });
-            }
-        } else if (productAlreadyRegister && (!productIsActiveOnHost)) {
-            if (productIsActiveOnNuvem) {
-                await preparingDeleteProduct(product.codigo, IdProducAndVariants, productAndVariants)
-                    .then(() => {
-                        resolve();
-                    });
-            } else {
+            } else if (!productAlreadyRegister && (!productIsActiveOnHost)) {
                 resolve();
+            } else if (productAlreadyRegister && productIsActiveOnHost) {
+                if (productIsActiveOnNuvem) {
+                    await preparingUpdateProduct(IdProducAndVariants, productAndVariants)
+                        .then(async () => {
+                            await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros);
+                        })
+                        .then(async () => {
+                            let productsDBAtualizado = JSON.parse(fs.readFileSync(pathProducts));
+
+                            if (Object.keys(productsDBAtualizado[`${idProductHost}`].variations).length === 0) {
+                                await preparingUpdateVariation(justProduct, UniqueIdProductOnNuvem, IdProducAndVariants, idProductHost)
+                                    .then(() => {
+                                        resolve();
+                                    });
+                            } else {
+                                resolve();
+                            }
+                        });
+                } else {
+                    await preparingUndeleteProduct(product.codigo, IdProducAndVariants, productAndVariants)
+                        .then(async () => {
+                            await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros)
+                                .then(() => {
+                                    resolve();
+                                });
+                        });
+                }
+            } else if (productAlreadyRegister && (!productIsActiveOnHost)) {
+                if (productIsActiveOnNuvem) {
+                    await preparingDeleteProduct(product.codigo, IdProducAndVariants, productAndVariants)
+                        .then(() => {
+                            resolve();
+                        });
+                } else {
+                    resolve();
+                }
             }
+        } catch (error) {
+            console.log(error)
         }
+      
     });
 }
 

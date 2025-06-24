@@ -18,8 +18,8 @@ async function requireAllVariationsOfAProduct(idProduct, nameProduct, stockProdu
 
             const parser = new xml2js.Parser({ explicitArray: false });
 
-            const produtos = xmlOfProducts.cadastros.tbProdutoDados.row;
-            const precos = xmlOfProducts.cadastros.tbProdutoPrecos.row;
+            const produtos = xmlOfProducts['tbProdutoDados'][0]['row'];
+            const precos = xmlOfProducts['tbProdutoPrecos'][0]['row'];
 
             const produtosArray = Array.isArray(produtos) ? produtos : [produtos];
             const precosArray = Array.isArray(precos) ? precos : [precos];
@@ -83,7 +83,7 @@ async function requireAllVariationsOfAProduct(idProduct, nameProduct, stockProdu
 
             // 🔥 Mantendo a mesma chamada da função anterior
             await readingAllRecordVariations(variationsRecords, 0, idProduct, stockProduct);
-
+            console.log('vou dar resolve das variações')
             resolve({
                 code: 200,
                 msg: 'Variações consultadas com sucesso'
