@@ -110,7 +110,6 @@ async function readingAllXMLsProductsAndFormatInJson(records, index = 0, arrayJs
                 });
             }
 
-            const status = produto.pro_indStatus == '1' ? 'ATIVO' : 'INATIVO'; 
             const categoria = produto.pro_descCategoria == 'Sem Categoria' ? '' : produto.pro_descCategoria;
             const subcategoria = produto.pro_descSubCategoria == 'Sem Subcategoria' ? '' : produto.pro_descSubCategoria;
             const marca = produto.pro_descMarca == 'Sem Marca' ? '' : produto.pro_descMarca;
@@ -122,7 +121,7 @@ async function readingAllXMLsProductsAndFormatInJson(records, index = 0, arrayJs
                 VALOR_VENDA: preco,
                 ESTOQUE: estoque,
                 MARCA: marca,
-                STATUS: status,
+                STATUS: produto.pro_indStatus,
                 CATEGORIA: categoria,
                 SUBCATEGORIA: subcategoria
             };
@@ -165,7 +164,7 @@ async function readingAllRecordProducts(productsRecords, index) {
                     "price": parseFloat(String(record.VALOR_VENDA ?? '').replace(',', '.')).toFixed(2),
                     "stock": parseInt(record.ESTOQUE),
                     "brand": record.MARCA,
-                    "published": ((record.STATUS == '1') && (parseInt(record.ESTOQUE) > 0)) ? true : false
+                    "published": ((record.STATUS == '0') && (parseInt(record.ESTOQUE) > 0)) ? true : false
                 };
 
                 await returnCategoryId(record.CATEGORIA, record.SUBCATEGORIA)
