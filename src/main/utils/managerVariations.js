@@ -41,7 +41,7 @@ async function requireAllVariationsOfAProduct(idProduct, nameProduct, stockProdu
                         'products',
                         'variations',
                         `${idProduct}`,
-                        `idVariante${idVariante}.xml`
+                        `${idVariante}.xml`
                     );
 
                     if (fs.existsSync(xmlPath)) {
