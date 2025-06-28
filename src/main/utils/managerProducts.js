@@ -6,19 +6,21 @@ const { preparingGetProductsOnSaurus, preparingGetStockProductsOnSaurus, prepari
 
 const { returnCategoryId } = require('./managerCategories.js');
 const { requireAllVariationsOfAProduct } = require('./managerVariations.js');
-const { clearFolderXMLProductsRecursive, gravarLog } = require('./auxFunctions.js');
+const { clearFolderXMLProductsRecursive, getActualDatetime, gravarLog } = require('./auxFunctions.js');
 
 const userDataPath = 'src/build';
 const pathProducts = path.join(userDataPath, 'products.json');
 
 var recordsInReqCadastros;
 
-async function requireAllProducts() {
+async function requireAllProducts(initialRequest) {
     return new Promise(async (resolve, reject) => {
         try {
             await clearFolderXMLProductsRecursive();
 
-            await preparingGetProductsOnSaurus('1968-08-30T00:00:00-03:00', 1)
+            let dateTimeToRequest = await getActualDatetime(initialRequest)
+
+            await preparingGetProductsOnSaurus(dateTimeToRequest, 1)
                 .then(async (response) => {
                     let pathXmlProducts = response;
 
@@ -174,7 +176,6 @@ async function readingAllRecordProducts(productsRecords, index) {
                         } else {
                             product.categories = [];
                         }
-                        console.log(`Lendo produto > :${product.name}. Estoque: ${product.stock}. Status: ${record.STATUS}`)
                         await registerOrUpdateProduct(product);
                     })
                     .then(async () => {
@@ -201,7 +202,7 @@ async function registerOrUpdateProduct(product) {
     return new Promise(async (resolve, reject) => {
         try {
             let productsDB = JSON.parse(fs.readFileSync(pathProducts));
-            let idProductHost = product.codigo;
+            let idProductSaurus = product.codigo;
             let stockProduct = product.stock;
             let nameProduct = product.name;
 
@@ -210,7 +211,7 @@ async function registerOrUpdateProduct(product) {
             delete productAndVariants.variants;
 
             var productAlreadyRegister = productsDB[`${product.codigo}`] ? true : false;
-            var productIsActiveOnHost = product.published;
+            var productIsActiveOnSaurus = product.published;
 
             const functionReturnStatusOnNuvem = () => { if (productAlreadyRegister) { return productsDB[`${product.codigo}`].status } else { return null } };
             const functionReturnUniqueIdProductOnNuvem = () => { if (productAlreadyRegister) { return productsDB[`${product.codigo}`].UniqueId } else { return null } };
@@ -221,44 +222,46 @@ async function registerOrUpdateProduct(product) {
             var UniqueIdProductOnNuvem = functionReturnUniqueIdProductOnNuvem();
             var IdProducAndVariants = functionReturnIdProductAndVariantsOnNuvem();
 
-            if (!productAlreadyRegister && productIsActiveOnHost) {
+            if (!productAlreadyRegister && productIsActiveOnSaurus) {
                 await preparingPostProduct(product)
                     .then(async () => {
-                        await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros)
+                        await requireAllVariationsOfAProduct(idProductSaurus, nameProduct, stockProduct, recordsInReqCadastros)
                             .then(() => {
                                 resolve();
                             });
                     });
-            } else if (!productAlreadyRegister && (!productIsActiveOnHost)) {
+            } else if (!productAlreadyRegister && (!productIsActiveOnSaurus)) {
                 resolve();
-            } else if (productAlreadyRegister && productIsActiveOnHost) {
+            } else if (productAlreadyRegister && productIsActiveOnSaurus) {
+
                 if (productIsActiveOnNuvem) {
                     await preparingUpdateProduct(IdProducAndVariants, productAndVariants)
-                        .then(async () => {
-                            await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros);
-                        })
-                        .then(async () => {
-                            let productsDBAtualizado = JSON.parse(fs.readFileSync(pathProducts));
+                    .then(async () => {
+                        await requireAllVariationsOfAProduct(idProductSaurus, nameProduct, stockProduct, recordsInReqCadastros);
+                    })
+                    .then(async () => {
+                        let productsDBAtualizado = JSON.parse(fs.readFileSync(pathProducts));
 
-                            if (Object.keys(productsDBAtualizado[`${idProductHost}`].variations).length === 0) {
-                                await preparingUpdateVariation(justProduct, UniqueIdProductOnNuvem, IdProducAndVariants, idProductHost)
-                                    .then(() => {
-                                        resolve();
-                                    });
-                            } else {
+                        if (Object.keys(productsDBAtualizado[`${idProductSaurus}`].variations).length === 0) {
+                            await preparingUpdateVariation(justProduct, UniqueIdProductOnNuvem, IdProducAndVariants, idProductSaurus)
+                            .then(() => {
                                 resolve();
-                            }
-                        });
+                            });
+                        } else {
+                            resolve();
+                        }
+                    });
                 } else {
                     await preparingUndeleteProduct(product.codigo, IdProducAndVariants, productAndVariants)
                         .then(async () => {
-                            await requireAllVariationsOfAProduct(idProductHost, nameProduct, stockProduct, recordsInReqCadastros)
+                            await requireAllVariationsOfAProduct(idProductSaurus, nameProduct, stockProduct, recordsInReqCadastros)
                                 .then(() => {
                                     resolve();
                                 });
                         });
                 }
-            } else if (productAlreadyRegister && (!productIsActiveOnHost)) {
+
+            } else if (productAlreadyRegister && (!productIsActiveOnSaurus)) {
                 if (productIsActiveOnNuvem) {
                     await preparingDeleteProduct(product.codigo, IdProducAndVariants, productAndVariants)
                         .then(() => {

@@ -17,7 +17,6 @@ async function requireAllVariationsOfAProduct(idProduct, nameProduct, stockProdu
             variationsModificateds = [];
 
             const parser = new xml2js.Parser({ explicitArray: false });
-
             const produtos = xmlOfProducts['tbProdutoDados'][0]['row'];
             const precos = xmlOfProducts['tbProdutoPrecos'][0]['row'];
 
@@ -25,12 +24,12 @@ async function requireAllVariationsOfAProduct(idProduct, nameProduct, stockProdu
             const precosArray = Array.isArray(precos) ? precos : [precos];
 
             // 🔍 Localiza todas as variações do produto (onde pro_idProdutoPai == idProduct)
-            const produtosVariacoes = produtosArray.filter(p => p.pro_idProdutoPai === idProduct);
+            const produtosVariacoes = produtosArray.filter(p => p['$'].pro_idProdutoPai == idProduct);
 
             const variationsRecords = [];
 
             for (const produto of produtosVariacoes) {
-                const idVariante = produto.pro_idProduto;
+                const idVariante = produto['$'].pro_idProduto;
 
                 // 🔍 Buscar estoque no XML externo
                 let estoque = 0;
@@ -47,49 +46,57 @@ async function requireAllVariationsOfAProduct(idProduct, nameProduct, stockProdu
                     if (fs.existsSync(xmlPath)) {
                         const xmlContent = fs.readFileSync(xmlPath, 'utf8');
                         const estoqueXml = await parser.parseStringPromise(xmlContent);
-                        const estoqueData = estoqueXml.retProdutoEstoque?.EstoqueLoja;
-
+        
+                        const estoqueData = estoqueXml.retProdutoEstoque.EstoqueLoja['$'];
                         if (estoqueData) {
                             const estoqueItem = Array.isArray(estoqueData) ? estoqueData[0] : estoqueData;
                             estoque = parseFloat(estoqueItem.qSaldo) || 0;
                         }
+                    }else{
+                        console.log(`Caminho: ${xmlPath} não encontrado`)
                     }
                 } catch (err) {
+                    console.log(err)
                     estoque = 0;
                 }
+                
 
                 // 🔍 Buscar preço da menor tabela (menor pro_idTabPreco)
-                const precosDaVariante = precosArray.filter(p => p.pro_idProduto === idVariante);
+                const precosDaVariante = precosArray.filter(p => p['$'].pro_idProduto == idVariante);
 
                 let valorVenda = 0;
                 if (precosDaVariante.length > 0) {
+
                     const precoSelecionado = precosDaVariante.reduce((anterior, atual) => {
-                        return parseInt(atual.pro_idTabPreco) < parseInt(anterior.pro_idTabPreco) ? atual : anterior;
+                        return parseInt(atual['$'].pro_idTabPreco) < parseInt(anterior['$'].pro_idTabPreco) ? atual : anterior;
                     });
-                    valorVenda = parseFloat(precoSelecionado.pro_vPreco) || 0;
+                    valorVenda = parseFloat(precoSelecionado['$'].pro_vPreco) || 0;
                 }
-
+    
                 // 🔍 Calcular GRADE (diferença entre nome do produto e nome da variação)
-                const grade = produto.pro_descProduto.replace(nameProduct, '').trim();
+                const grade = produto['$'].pro_descProduto.replace(nameProduct, '').trim();
 
-                // 🔧 Monta objeto no padrão
-                variationsRecords.push({
-                    ID_PRODUTO: idVariante,
-                    GRADE: grade,
-                    VALOR_VENDA: valorVenda,
-                    ESTOQUE: estoque
-                });
+                if((estoque>0)&&(produto['$'].pro_indStatus=='0')){
+                    variationsRecords.push({
+                        ID_PRODUTO: idProduct,
+                        GRADE: grade,
+                        VALOR_VENDA: valorVenda,
+                        ESTOQUE: estoque
+                    });
+                }
+                
             }
 
             // 🔥 Mantendo a mesma chamada da função anterior
             await readingAllRecordVariations(variationsRecords, 0, idProduct, stockProduct);
-            console.log('vou dar resolve das variações')
+
             resolve({
                 code: 200,
                 msg: 'Variações consultadas com sucesso'
             });
 
         } catch (error) {
+            console.log(error)
             reject({
                 code: 500,
                 msg: 'Erro ao consultar variações',
@@ -102,53 +109,59 @@ async function requireAllVariationsOfAProduct(idProduct, nameProduct, stockProdu
 
 async function readingAllRecordVariations(variationsRecords, index, idProdutoSaurus, stockProduct){
     return new Promise(async (resolve, reject) => {
-        let productsDB = JSON.parse(fs.readFileSync(pathProducts));
-        let record;
+        try {
+            let productsDB = JSON.parse(fs.readFileSync(pathProducts));
+            let record;
 
-        if(variationsRecords){
-            record = variationsRecords[index]
-        }else{
-            variationsRecords = []
-        }
-         
-        let i = index + 1;
-
-        if(i > variationsRecords.length){
-            if(productsDB[`${idProdutoSaurus}`]){
-                await deleteUnlistedVariations(productsDB[`${idProdutoSaurus}`], idProdutoSaurus, variationsModificateds, stockProduct)
-                .then(async () => {
-                    resolve()
-                })
+            if(variationsRecords){
+                record = variationsRecords[index]
             }else{
-                resolve()
-            }
-
-        }
-        else{
-            let variant = {
-                "values": [
-                      {
-                        "pt": record.GRADE
-                      }
-                ],
-                "codigo": record.ID_PRODUTO,
-                "price": parseFloat(String(record.VALOR_VENDA ?? '').replace(',', '.')).toFixed(2),
-                //"cost_price": parseFloat(String(record.CUSTO ?? '').replace(',', '.')).toFixed(2),
-                "stock": parseInt(record.ESTOQUE),
+                variationsRecords = []
             }
             
-            if(productsDB[`${record.ID_PRODUTO}`]){
-                await registerUpdateOrDeleteVariant(variant)
-                .then(async() => {
-                    setTimeout(async () => {
-                        await readingAllRecordVariations(variationsRecords, i, idProdutoSaurus, stockProduct)
-                        .then(() => {
-                            resolve()
-                        })
-                    }, 400);
-                })
-            }
+            let i = index + 1;
 
+            if(i > variationsRecords.length){
+                if(productsDB[`${idProdutoSaurus}`]){
+                    await deleteUnlistedVariations(productsDB[`${idProdutoSaurus}`], idProdutoSaurus, variationsModificateds, stockProduct)
+                    .then(async () => {
+                        resolve()
+                    })
+                }else{
+                    resolve()
+                }
+
+            }
+            else{
+                let variant = {
+                    "values": [
+                        {
+                            "pt": record.GRADE
+                        }
+                    ],
+                    "codigo": record.ID_PRODUTO,
+                    "price": parseFloat(String(record.VALOR_VENDA ?? '').replace(',', '.')).toFixed(2),
+                    //"cost_price": parseFloat(String(record.CUSTO ?? '').replace(',', '.')).toFixed(2),
+                    "stock": parseInt(record.ESTOQUE),
+                }
+    
+                if(productsDB[`${idProdutoSaurus}`]){
+                    await registerUpdateOrDeleteVariant(variant)
+                    .then(async() => {
+                        setTimeout(async () => {
+                            await readingAllRecordVariations(variationsRecords, i, idProdutoSaurus, stockProduct)
+                            .then(() => {
+                                resolve()
+                            })
+                        }, 400);
+                    })
+                }
+                else{
+                    console.log(productsDB[record.ID_PRODUTO])
+                }
+            }
+        } catch (error) {
+            console.log(error)
         }
 
     })

@@ -264,19 +264,22 @@ async function saveNewUniqueIdInProduct(idHost, id){
 
 
 async function getActualDatetime(){
-  return new Promise(async (resolve, reject) => {
+  if(!firtsRequest){
     const now = new Date();
 
     now.setMinutes(now.getMinutes() - 1);
 
-    let actualTime = now.getFullYear() + "-" +
+    let timeToRequest = now.getFullYear() + "-" +
     String(now.getMonth() + 1).padStart(2, '0') + "-" +
     String(now.getDate()).padStart(2, '0') + "T" +
     String(now.getHours()).padStart(2, '0') + ":" +
-    String(now.getMinutes()).padStart(2, '0') + ":00";
+    String(now.getMinutes() - 10).padStart(2, '0') + ":00";
 
-    resolve(actualTime)
-  })
+    return timeToRequest
+  }
+  else{
+    return '1968-08-30T00:00:00-03:00'
+  }
 }
 
 
@@ -413,7 +416,6 @@ async function clearFolderXMLProductsRecursive() {
 }
 
 
-
 module.exports = {
     findProductKeyByIdNuvemShopAsync,
     copyJsonFilesToUserData,
@@ -427,5 +429,5 @@ module.exports = {
     encodedStringInBase64,
     saveDecodedXmlFromBase64ZipReqCadastros,
     saveDecodedXmlFromBase64ZipRetProdutoEstoque,
-    clearFolderXMLProductsRecursive
+    clearFolderXMLProductsRecursive,
 }

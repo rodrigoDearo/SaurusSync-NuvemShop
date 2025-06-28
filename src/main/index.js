@@ -100,11 +100,11 @@ async function mainProcess(){
 
     await deleteErrorsRecords()
     .then(async () => {
-      await requireAllProducts()
+      await requireAllProducts(true)
     })
     .then(async () => {
       setInterval(async () => {
-        await requireAllProducts()
+        await requireAllProducts(false)
         .then(() => {
           gravarLog('---------------------------------------------------------------------')
           gravarLog('REALIZADO A LEITURA PERIODICA')
