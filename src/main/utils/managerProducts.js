@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('node:path');
 const xml2js = require('xml2js');
+const { app } = require('electron')
 
 const { preparingGetProductsOnSaurus, preparingGetStockProductsOnSaurus, preparingPostProduct, preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
 
@@ -8,7 +9,8 @@ const { returnCategoryId } = require('./managerCategories.js');
 const { requireAllVariationsOfAProduct } = require('./managerVariations.js');
 const { clearFolderXMLProductsRecursive, getActualDatetime, gravarLog } = require('./auxFunctions.js');
 
-const userDataPath = 'src/build';
+//const userDataPath = 'src/build';
+const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathProducts = path.join(userDataPath, 'products.json');
 
 var recordsInReqCadastros;

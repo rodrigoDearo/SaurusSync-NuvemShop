@@ -1,13 +1,14 @@
 const fs = require ('fs')
 const path = require('node:path')
 const xml2js = require('xml2js')
+const { app } = require('electron')
 
 const { preparingPostVariation, preparingUpdateVariation, preparingDeleteVariation } = require('./preparingRequests.js');
 
 var variationsModificateds;
 
-const userDataPath = 'src/build';
-//const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
+//const userDataPath = 'src/build';
+const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathProducts = path.join(userDataPath, 'products.json');
 
 

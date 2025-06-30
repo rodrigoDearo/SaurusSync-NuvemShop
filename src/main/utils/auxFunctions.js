@@ -2,13 +2,10 @@ const fs = require('fs')
 const { Readable } = require('stream');
 const zlib = require('zlib');
 const path = require('node:path');
+const { app } = require('electron')
 
-const { returnInfo } = require('../envManager');
-const { returnValueFromJson } = require('./manageInfoUser');
-const { error } = require('node:console');
-
-const userDataPath = 'src/build';
-//const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
+//const userDataPath = 'src/build';
+const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathLog = path.join(userDataPath, 'logs');
 const pathConfigApp = path.join(userDataPath, 'configApp.json');
 const pathProducts = path.join(userDataPath, 'products.json');
@@ -263,7 +260,7 @@ async function saveNewUniqueIdInProduct(idHost, id){
 }
 
 
-async function getActualDatetime(){
+async function getActualDatetime(firtsRequest){
   if(!firtsRequest){
     const now = new Date();
 

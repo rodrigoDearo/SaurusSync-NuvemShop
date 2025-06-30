@@ -4,8 +4,8 @@ const { app } = require('electron')
 
 const { preparingPostCategory, preparingPostSubCategory } = require('./preparingRequests.js');
 
-const userDataPath = 'src/build';
-//const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
+//const userDataPath = 'src/build';
+const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathCategories = path.join(userDataPath, 'categories.json');
 
 

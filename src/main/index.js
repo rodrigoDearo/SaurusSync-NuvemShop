@@ -30,7 +30,7 @@ app.on('window-all-closed', () => {
 })
 
 app.whenReady().then(() => {
-  //copyJsonFilesToUserData()
+  copyJsonFilesToUserData()
   createWindow()
 
   const icon = path.join(__dirname, 'img/icon.png')
