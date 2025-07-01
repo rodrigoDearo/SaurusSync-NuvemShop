@@ -12,7 +12,7 @@ async function getProducts(body, header){
                     console.error('Erro ao parsear XML:', err);
                     return reject(err);
                 }
-
+                console.log(result)
                 const base64String = result['soap:Envelope']['soap:Body'][0]['retCadastrosResponse'][0]['retCadastrosResult'][0]
                 
                 const xmlPath = await saveDecodedXmlFromBase64ZipReqCadastros(base64String);
@@ -21,7 +21,7 @@ async function getProducts(body, header){
         })
         .catch(async (error) => {
             console.log(error.response);
-            reject(error);
+            resolve(null);
         });
     });
 }

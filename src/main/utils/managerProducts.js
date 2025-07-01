@@ -24,6 +24,10 @@ async function requireAllProducts(initialRequest) {
 
             await preparingGetProductsOnSaurus(dateTimeToRequest, 1)
                 .then(async (response) => {
+                    if(response==null){
+                        throw new Error
+                    }
+
                     let pathXmlProducts = response;
 
                     await new Promise((resolve, reject) => {
