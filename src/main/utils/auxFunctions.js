@@ -260,22 +260,23 @@ async function saveNewUniqueIdInProduct(idHost, id){
 }
 
 
-async function getActualDatetime(firtsRequest){
-  if(!firtsRequest){
+async function getActualDatetime(firtsRequest) {
+  if (!firtsRequest) {
     const now = new Date();
 
-    now.setMinutes(now.getMinutes() - 1);
+    // Remove 10 minutes, handling hour/day underflow automatically
+    now.setMinutes(now.getMinutes() - 10);
 
     let timeToRequest = now.getFullYear() + "-" +
-    String(now.getMonth() + 1).padStart(2, '0') + "-" +
-    String(now.getDate()).padStart(2, '0') + "T" +
-    String(now.getHours()).padStart(2, '0') + ":" +
-    String(now.getMinutes() - 10).padStart(2, '0') + ":00";
+      String(now.getMonth() + 1).padStart(2, '0') + "-" +
+      String(now.getDate()).padStart(2, '0') + "T" +
+      String(now.getHours()).padStart(2, '0') + ":" +
+      String(now.getMinutes()).padStart(2, '0') + ":00";
 
-    return timeToRequest
-  }
-  else{
-    return '1968-08-30T00:00:00-03:00'
+    return timeToRequest;
+  } else {
+    return '2025-07-01T00:00:00-03:00'
+    //return '1968-08-30T00:00:00-03:00';
   }
 }
 
