@@ -275,8 +275,7 @@ async function getActualDatetime(firtsRequest) {
 
     return timeToRequest;
   } else {
-    return '2025-07-01T00:00:00-03:00'
-    //return '1968-08-30T00:00:00-03:00';
+    return '1968-08-30T00:00:00-03:00';
   }
 }
 
