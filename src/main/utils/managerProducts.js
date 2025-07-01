@@ -32,7 +32,11 @@ async function requireAllProducts(initialRequest) {
 
                     await new Promise((resolve, reject) => {
                         xml2js.parseString(fs.readFileSync(pathXmlProducts), async (error, result) => {
-                            if (error) return reject(error);
+                            if (error) return rejif(!result['cadastros']['tbProdutoDados']){
+                                resolve()
+                            }ect(error);
+
+                            
 
                             let products = result['cadastros']['tbProdutoDados'][0]['row'];
                             recordsInReqCadastros = result['cadastros'];
