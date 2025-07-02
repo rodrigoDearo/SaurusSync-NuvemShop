@@ -93,8 +93,13 @@ function preparingGetProductsOnSaurus(data, tpSync) {
 
       getProducts(body, headers)
         .then((xmlPath) => {
-          console.log('Produtos consultados com sucesso no WebService da Saurus');
-          resolve(xmlPath);
+          if(xmlPath){
+            console.log('Produtos consultados com sucesso no WebService da Saurus');
+            resolve(xmlPath);
+          }else{
+            console.log('Nenhum produto modificado para ser lido')
+             resolve(null);
+          }
         })
         .catch(() => {
           console.log('Erro ao consultar produtos no WebService da Saurus');

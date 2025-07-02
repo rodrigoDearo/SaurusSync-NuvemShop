@@ -24,11 +24,13 @@ async function requireAllProducts(initialRequest) {
 
             await preparingGetProductsOnSaurus(dateTimeToRequest, 1)
                 .then(async (response) => {
-                    if(response==null){
-                        throw new Error
-                    }
+                    let pathXmlProducts;
 
-                    let pathXmlProducts = response;
+                    if(response){
+                        pathXmlProducts = response;
+                    }else{
+                        pathXmlProducts = await preparingGetProductsOnSaurus('1968-08-30T00:00:00-03:00', 1)
+                    }
 
                     await new Promise((resolve, reject) => {
                         xml2js.parseString(fs.readFileSync(pathXmlProducts), async (error, result) => {
