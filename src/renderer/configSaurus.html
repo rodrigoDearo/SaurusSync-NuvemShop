@@ -18,6 +18,11 @@
             .then(async (response) => {
                 document.getElementById('chavecaixa-input').value = response;
             })
+            let response = getInfoUserFromJSON('tabeladepreco');
+            return response
+        })
+        .then(async (fieldvalue) => {
+            document.getElementById('tabpreco-input').value = fieldvalue
         })
     </script>
 </head>
@@ -63,13 +68,17 @@
     </div>
 
     <form class="container-fluid col-8" id="formularioFull">
-        <div class="mb-3">
+        <div class="mb-2">
           <label class="form-label">Domínio</label>
           <input type="text" id="dominio-input" class="form-control input-text" required>
         </div>
-        <div class="mb-5">
+        <div class="mb-2">
           <label class="form-label">Chave Caixa</label>
           <input type="text" id="chavecaixa-input" class="form-control input-text" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Tabela de Preço</label>
+          <input type="text" id="tabpreco-input" class="form-control input-text" required>
         </div>
         <button type="submit" onclick="saveInfoSaurus()" class="btn btn-primary container botao-save">Salvar</button>
       </form>

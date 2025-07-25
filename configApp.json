@@ -1,7 +1,8 @@
 {
     "saurus": {
         "dominio": "",
-        "chavecaixa": ""
+        "chavecaixa": "",
+        "tabpreco": 1
     },
     "nuvemshop": {
         "code": "",

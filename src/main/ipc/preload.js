@@ -4,7 +4,7 @@ const WINDOW_API = {
     closeApp: () => ipcRenderer.send('close'),
     minimizeApp: () => ipcRenderer.send('minimize'),
 
-    saveSaurus: (dominio, chavecaixa) => ipcRenderer.invoke('saveInfoSaurus', [dominio, chavecaixa]),
+    saveSaurus: (dominio, chavecaixa, tabpreco) => ipcRenderer.invoke('saveInfoSaurus', [dominio, chavecaixa, tabpreco]),
     saveNuvemShop: (code) => ipcRenderer.invoke('saveInfoNuvemShop', code),
     getInfoUser: (field) => ipcRenderer.invoke('getInfoUser', field),
     start: () => ipcRenderer.invoke('startProgram')

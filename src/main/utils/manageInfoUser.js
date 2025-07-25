@@ -19,7 +19,8 @@ async function saveInfos(systemSave, infos) {
       switch (systemSave) {
         case 'saurus':
           dadosApp.saurus.dominio = infos[0];
-          dadosApp.saurus.chavecaixa = infos[1]
+          dadosApp.saurus.chavecaixa = infos[1];
+          dadosApp.saurus.tabpreco = infos[2];
           break;
       }
 

@@ -17,11 +17,13 @@ async function saveInfoSaurus(){
 
     let dominio = document.getElementById('dominio-input').value;
     let chavecaixa = document.getElementById('chavecaixa-input').value;
+    let tabpreco = document.getElementById('tabpreco-input').value;
 
     try {
-        await window.api.saveSaurus(dominio, chavecaixa);
+        await window.api.saveSaurus(dominio, chavecaixa, tabpreco);
         document.getElementById('dominio-input').style.border = "2px solid green";
         document.getElementById('chavecaixa-input').style.border = "2px solid green"
+        document.getElementById('tabpreco-input').style.border = "2px solid green"
 
     } catch (error) {
         console.error("Erro ao salvar:", error);
