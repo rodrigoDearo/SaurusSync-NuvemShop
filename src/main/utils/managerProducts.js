@@ -6,6 +6,7 @@ const { app } = require('electron')
 const { preparingGetProductsOnSaurus, preparingGetStockProductsOnSaurus, preparingPostProduct, preparingUpdateProduct, preparingDeleteProduct, preparingDeletePermanentProduct, preparingUndeleteProduct, preparingUpdateVariation } = require('./preparingRequests.js');
 
 const { returnCategoryId } = require('./managerCategories.js');
+const { returnValueFromJson } = require('./manageInfoUser.js');
 const { requireAllVariationsOfAProduct } = require('./managerVariations.js');
 const { clearFolderXMLProductsRecursive, getActualDatetime, gravarLog } = require('./auxFunctions.js');
 
@@ -13,13 +14,14 @@ const { clearFolderXMLProductsRecursive, getActualDatetime, gravarLog } = requir
 const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathProducts = path.join(userDataPath, 'products.json');
 
-var recordsInReqCadastros;
+var recordsInReqCadastros, tabPreco;
 
 async function requireAllProducts(initialRequest) {
     return new Promise(async (resolve, reject) => {
         try {
             await clearFolderXMLProductsRecursive();
-
+            
+            tabPreco = await returnValueFromJson('tabeladeprecosaurus');
             let dateTimeToRequest = await getActualDatetime(initialRequest)
 
             await preparingGetProductsOnSaurus(dateTimeToRequest, 1)
@@ -105,10 +107,12 @@ async function readingAllXMLsProductsAndFormatInJson(records, index = 0, arrayJs
                 .filter(p => p['$'].pro_idProduto === idProduto)
                 .sort((a, b) => parseInt(a['$'].pro_idTabPreco) - parseInt(b['$'].pro_idTabPreco));
 
-            const preco = precosDoProduto.length > 0
-                ? parseFloat(precosDoProduto[0]['$'].pro_vPreco)
-                : 0;
-
+            let preco = null;
+            
+            for(let i=0; i<precosDoProduto.length; i++){
+                preco = ((precosDoProduto[i]['$'].pro_idTabPreco==tabPreco) && (preco==null)) ?  parseFloat(precosDoProduto[i]['$'].pro_vPreco) : null
+            }
+        
             const pathXmlProduct = path.join(userDataPath, 'XMLs', 'products', idProduto + '.xml');
 
             let estoque = 0;
@@ -178,7 +182,7 @@ async function readingAllRecordProducts(productsRecords, index) {
                     "price": parseFloat(String(record.VALOR_VENDA ?? '').replace(',', '.')).toFixed(2),
                     "stock": parseInt(record.ESTOQUE),
                     "brand": record.MARCA,
-                    "published": ((record.STATUS == '0') && (parseInt(record.ESTOQUE) > 0)) ? true : false
+                    "published": ((record.STATUS == '0') && (parseInt(record.ESTOQUE) > 0) && (record.VALOR_VENDA)) ? true : false
                 };
 
                 await returnCategoryId(record.CATEGORIA, record.SUBCATEGORIA)

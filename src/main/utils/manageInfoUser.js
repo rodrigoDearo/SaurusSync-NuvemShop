@@ -52,6 +52,10 @@ async function returnValueFromJson(campo){
             resolve(dados.saurus.chavecaixa);
             break;
 
+          case 'tabeladeprecosaurus':
+            resolve(dados.saurus.tabpreco)
+            break
+
           case 'codenuvemshop':
             resolve(dados.nuvemshop.code);
             break;
