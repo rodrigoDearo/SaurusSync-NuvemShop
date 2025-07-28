@@ -182,7 +182,7 @@ async function readingAllRecordProducts(productsRecords, index) {
                     "price": parseFloat(String(record.VALOR_VENDA ?? '').replace(',', '.')).toFixed(2),
                     "stock": parseInt(record.ESTOQUE),
                     "brand": record.MARCA,
-                    "published": ((record.STATUS == '0') && (parseInt(record.ESTOQUE) > 0) && (record.VALOR_VENDA)) ? true : false
+                    "published": ((record.STATUS == '0') && (parseInt(record.ESTOQUE) > 0) && (record.VALOR_VENDA) && (parseFloat(record.VALOR_VENDA)>0)) ? true : false
                 };
 
                 await returnCategoryId(record.CATEGORIA, record.SUBCATEGORIA)
