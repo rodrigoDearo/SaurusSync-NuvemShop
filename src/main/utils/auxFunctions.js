@@ -4,8 +4,8 @@ const zlib = require('zlib');
 const path = require('node:path');
 const { app } = require('electron')
 
-//const userDataPath = 'src/build';
-const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
+const userDataPath = 'src/build';
+//const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathLog = path.join(userDataPath, 'logs');
 const pathConfigApp = path.join(userDataPath, 'configApp.json');
 const pathProducts = path.join(userDataPath, 'products.json');
@@ -37,7 +37,7 @@ function gravarLog(mensagem) {
 
 
 
-async function successHandlingRequests(destiny, resource, idHost, idNuvemShop, othersInfo){
+async function successHandlingRequests(destiny, resource, idSaurus, idNuvemShop, othersInfo){
   return new Promise(async (resolve, reject) => {
   try {
 
@@ -46,7 +46,7 @@ async function successHandlingRequests(destiny, resource, idHost, idNuvemShop, o
 
       switch (resource) {
         case "post":
-          productsDB[`${idHost}`] = {
+          productsDB[`${idSaurus}`] = {
             "idNuvemShop": `${idNuvemShop}`,
             "UniqueId": `${othersInfo}`,
             "status": "ATIVO",
@@ -54,7 +54,7 @@ async function successHandlingRequests(destiny, resource, idHost, idNuvemShop, o
             "hashImage": "",
             "variations": {}
           }
-          await verifyToDeleteErrorRecord(destiny, idHost, 'POST')
+          await verifyToDeleteErrorRecord(destiny, idSaurus, 'POST')
           gravarLog('Cadastrado registro no banco de ' + destiny);
           break;
 
@@ -63,12 +63,12 @@ async function successHandlingRequests(destiny, resource, idHost, idNuvemShop, o
           break;
 
         case "delete":
-          productsDB[`${idHost}`].status = "INATIVO";
+          productsDB[`${idSaurus}`].status = "INATIVO";
           gravarLog('Deletado registro no banco de ' + destiny);
           break;
 
         case "undelete":
-          productsDB[`${idHost}`].status = "ATIVO";
+          productsDB[`${idSaurus}`].status = "ATIVO";
           gravarLog('Re-Cadastrado registro no banco de ' + destiny);
           break;
       }
@@ -110,7 +110,7 @@ async function successHandlingRequests(destiny, resource, idHost, idNuvemShop, o
         case "delete":
           delete categoriesDB[`${othersInfo[0]}`].subCategories[`${othersInfo[1]}`]
           gravarLog('Deletado registro no banco de ' + destiny);
-          await verifyToDeleteErrorRecord(destiny, idHost, 'POST')
+          await verifyToDeleteErrorRecord(destiny, idSaurus, 'POST')
           break;
 
 
@@ -125,7 +125,7 @@ async function successHandlingRequests(destiny, resource, idHost, idNuvemShop, o
 
       switch (resource) {
         case "post":
-          productsDB[`${idHost}`].variations[`${othersInfo[0]}`] = idNuvemShop
+          productsDB[`${idSaurus}`].variations[`${othersInfo[0]}`] = idNuvemShop
           gravarLog('Cadastrado registro no banco de ' + destiny);
           break;
 
@@ -134,7 +134,7 @@ async function successHandlingRequests(destiny, resource, idHost, idNuvemShop, o
           break;
 
         case "delete":
-          delete productsDB[`${idHost}`].variations[`${othersInfo[0]}`]
+          delete productsDB[`${idSaurus}`].variations[`${othersInfo[0]}`]
           gravarLog('Deletado registro no banco de ' + destiny);
           break;
 
@@ -149,14 +149,14 @@ async function successHandlingRequests(destiny, resource, idHost, idNuvemShop, o
 
       switch (resource) {
         case "post":
-          productsDB[`${idHost}`].imageId = `${idNuvemShop}`
-          productsDB[`${idHost}`].hashImage = othersInfo[0]
+          productsDB[`${idSaurus}`].imageId = `${idNuvemShop}`
+          productsDB[`${idSaurus}`].hashImage = othersInfo[0]
           gravarLog('Cadastrado imagem de produto com sucesso');
           break;
 
         case "delete":
-          productsDB[`${idHost}`].imageId = false
-          productsDB[`${idHost}`].hashImage = false
+          productsDB[`${idSaurus}`].imageId = false
+          productsDB[`${idSaurus}`].hashImage = false
           gravarLog('Deletado imagem de produto com sucesso');
           break;
 
@@ -190,7 +190,7 @@ async function successHandlingRequests(destiny, resource, idHost, idNuvemShop, o
 }
 
 
-async function errorHandlingRequest(destiny, resource, idHost, idNuvemShop, errors, body){
+async function errorHandlingRequest(destiny, resource, idSaurus, idNuvemShop, errors, body){
   return new Promise(async (resolve, reject) => {
       let errorsDB = JSON.parse(fs.readFileSync(pathErrorsDB))
 
@@ -200,7 +200,7 @@ async function errorHandlingRequest(destiny, resource, idHost, idNuvemShop, erro
       
       let mensagemErro = JSON.stringify(errors).length > 500 ? 'Erro causado por Bad Request, mensagem longa' : errors
       
-      errorsDB[destiny][idHost] = {
+      errorsDB[destiny][idSaurus] = {
         "typeRequest": resource,
         "idNuvemShop": idNuvemShop,
         "timeRequest": dataFormatada,
@@ -215,12 +215,12 @@ async function errorHandlingRequest(destiny, resource, idHost, idNuvemShop, erro
 }
 
 
-async function verifyToDeleteErrorRecord(destiny, idHost, type){
+async function verifyToDeleteErrorRecord(destiny, idSaurus, type){
   return new Promise(async (resolve, reject) => {
     let errorsDB = JSON.parse(fs.readFileSync(pathErrorsDB));
 
-    if(errorsDB[destiny][idHost]&&errorsDB[destiny][idHost].typeRequest == type){
-        delete errorsDB[destiny][idHost]
+    if(errorsDB[destiny][idSaurus]&&errorsDB[destiny][idSaurus].typeRequest == type){
+        delete errorsDB[destiny][idSaurus]
     }
 
     fs.writeFileSync(pathErrorsDB, JSON.stringify(errorsDB), 'utf-8');
@@ -248,11 +248,11 @@ async function deleteErrorsRecords(){
 }
 
 
-async function saveNewUniqueIdInProduct(idHost, id){
+async function saveNewUniqueIdInProduct(idSaurus, id){
   return new Promise(async (resolve, reject) => {
     let productsDB = JSON.parse(fs.readFileSync(pathProducts))
 
-    productsDB[`${idHost}`].UniqueId = `${id}`
+    productsDB[`${idSaurus}`].UniqueId = `${id}`
 
     fs.writeFileSync(pathProducts, JSON.stringify(productsDB), 'utf-8')
     resolve()
