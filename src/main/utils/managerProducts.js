@@ -192,9 +192,9 @@ async function readingAllXMLsProductsAndFormatInJson(records, idsProdutosComXmlE
           }
         }
 
-        const categoria = produto.pro_descCategoria == "Sem Categoria" ? "" : produto.pro_descCategoria;
-        const subcategoria = produto.pro_descSubCategoria == "Sem Subcategoria" ? "" : produto.pro_descSubCategoria;
-        const marca = produto.pro_descMarca == "Sem Marca" ? "" : produto.pro_descMarca;
+        const categoria = (produto.pro_descCategoria?.toUpperCase() === "SEM CATEGORIA") ? "" : produto.pro_descCategoria;
+        const subcategoria = (produto.pro_descSubCategoria?.toUpperCase() === "SEM SUBCATEGORIA") ? "" : produto.pro_descSubCategoria;
+        const marca = (produto.pro_descMarca?.toUpperCase() === "SEM MARCA") ? "" : produto.pro_descMarca;
 
         // Se quiser, pode incluir published aqui, usando as regras que você definiu:
         const published = estoque > 0 && preco > 0 && produto.pro_indStatus === "0";
