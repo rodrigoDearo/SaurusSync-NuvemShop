@@ -1,3 +1,4 @@
+// managerProducts.js - versão corrigida
 const fs = require("fs");
 const path = require("node:path");
 const xml2js = require("xml2js");
@@ -19,11 +20,13 @@ const { returnValueFromJson } = require("./manageInfoUser.js");
 const { requireAllVariationsOfAProduct } = require("./managerVariations.js");
 const { clearFolderXMLProductsRecursive, getActualDatetime, gravarLog }= require("./auxFunctions.js");
 
-//const userDataPath = "src/build";
-const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
+const userDataPath = "src/build";
+//const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathProducts = path.join(userDataPath, "products.json");
 
 var recordsInReqCadastros, tabPreco, idProdutos;
+
+function delay(ms){ return new Promise(res => setTimeout(res, ms)); }
 
 async function requireAllProducts(initialRequest) {
   return new Promise(async (resolve, reject) => {
@@ -63,59 +66,60 @@ async function requireAllProducts(initialRequest) {
                     const produtosDB = JSON.parse(fs.readFileSync(pathProducts));
                     const precos = recordsInReqCadastros.tbProdutoPrecos[0].row;
 
-                    const produtosASeremBaixados = [];
+                    const produtosASeremBaixados = new Set();
                     const variacoesBaixadas = [];
 
-                    // 1ª Passada: verificar quais produtos baixar
+                    // 1ª Passada: verificar quais produtos principais precisam de XML de estoque
                     for (const produto of products) {
                         const info = produto["$"];
                         const idProduto = info.pro_idProduto;
                         const idProdutoPai = info.pro_idProdutoPai;
 
-                        if (!idProdutoPai) {
-                        let precoValido = false;
+                        // só consideramos produtos principais (sem pai)
+                        if (idProdutoPai) continue;
 
+                        // verifica se o produto tem preço na tabela configurada
                         const precosDoProduto = precos.filter((p) => p["$"].pro_idProduto === idProduto);
-                        for (const p of precosDoProduto) {
+                        let hasPriceInTab = precosDoProduto.some((p) => {
                             const preco = p["$"];
-                            if (preco.pro_idTabPreco == tabPreco && parseFloat(preco.pro_vPreco) > 0) {
-                            precoValido = true;
-                            break;
-                            }
-                        }
+                            // tratar vírgula -> ponto
+                            const v = parseFloat(String(preco.pro_vPreco ?? "").replace(",", "."));
+                            return String(preco.pro_idTabPreco) == String(tabPreco) && !isNaN(v) && v > 0;
+                        });
 
                         const estaNoDB = produtosDB.hasOwnProperty(idProduto);
-                        const statusDB = estaNoDB ? produtosDB[idProduto].status : null;
+                        const statusSaurusIsActive = info.pro_indStatus === "0"; // '0' = ativo
 
-                        if (precoValido || statusDB === "ATIVO") {
-                            produtosASeremBaixados.push(idProduto);
+                        // regra:
+                        // - se possui preço na tabela configurada E está ativo no Saurus -> baixar (candidato a cadastro/atualização)
+                        // - se já existe no products.json -> baixar também (precisamos checar se deve ser ocultado)
+                        if ((hasPriceInTab && statusSaurusIsActive) || estaNoDB) {
+                            produtosASeremBaixados.add(idProduto);
                             await preparingGetStockProductsOnSaurus(idProduto, null);
-                            await new Promise((res) => setTimeout(res, 1000));
-                        }
+                            await delay(800);
                         }
                     }
 
-                    // 2ª Passada: baixar variações
+                    // 2ª Passada: baixar variações dos produtos que serão processados
                     for (const produto of products) {
                         const info = produto["$"];
                         const idProduto = info.pro_idProduto;
                         const idProdutoPai = info.pro_idProdutoPai;
 
-                        if (idProdutoPai && produtosASeremBaixados.includes(idProdutoPai)) {
-                        variacoesBaixadas.push(idProduto);
-                        await preparingGetStockProductsOnSaurus(idProduto, idProdutoPai);
-                        await new Promise((res) => setTimeout(res, 1000));
+                        if (idProdutoPai && produtosASeremBaixados.has(idProdutoPai)) {
+                            variacoesBaixadas.push(idProduto);
+                            await preparingGetStockProductsOnSaurus(idProduto, idProdutoPai);
+                            await delay(500);
                         }
                     }
 
-                    idProdutos = produtosASeremBaixados;
+                    idProdutos = Array.from(produtosASeremBaixados);
 
-                    gravarLog("Produtos principais baixados:", produtosASeremBaixados.length);
+                    gravarLog("Produtos principais baixados:", idProdutos.length);
                     gravarLog("Variacoes baixadas:", variacoesBaixadas.length);
-                    gravarLog("IDs dos produtos:", produtosASeremBaixados);
+                    gravarLog("IDs dos produtos:", idProdutos);
                     gravarLog("IDs das variações:", variacoesBaixadas);
                 }
-
 
                 await processProductsOptimized(products);
 
@@ -125,16 +129,14 @@ async function requireAllProducts(initialRequest) {
           });
         })
         .then(async () => {
-          readingAllXMLsProductsAndFormatInJson(recordsInReqCadastros, idProdutos)
-            .then(async (response) => {
-              await readingAllRecordProducts(response, 0);
-            })
-            .then(() => {
-              resolve();
-            });
+          // transforma XMLs baixados em JSON filtrado (só produtos com XML de estoque baixado)
+          const response = await readingAllXMLsProductsAndFormatInJson(recordsInReqCadastros, idProdutos);
+          await readingAllRecordProducts(response, 0);
+          resolve();
         })
         .catch((error) => {
           console.log(error);
+          reject(error);
         });
     } catch (error) {
       reject(error);
@@ -158,19 +160,19 @@ async function readingAllXMLsProductsAndFormatInJson(records, idsProdutosComXmlE
           continue;
         }
 
-        // Ignora variações
+        // Ignora variações aqui (só queremos produtos principais)
         if (produto.pro_idProdutoPai) {
           continue;
         }
 
         // Obtém o preço do produto na tabela válida
         const precoObj = precos.find(
-          (p) => p["$"].pro_idProduto === idProduto && p["$"].pro_idTabPreco == tabPreco
+          (p) => p["$"].pro_idProduto === idProduto && String(p["$"].pro_idTabPreco) == String(tabPreco)
         );
 
-        const preco = precoObj ? parseFloat(precoObj["$"].pro_vPreco) : 0;
+        const preco = precoObj ? parseFloat(String(precoObj["$"].pro_vPreco ?? "").replace(",", ".")) : 0;
 
-        // Pega o estoque do XML baixado (que existe garantido pela lista)
+        // Pega o estoque do XML baixado (somando todos os EstoqueLoja se houver múltiplos)
         const pathXmlProduct = path.join(
           userDataPath,
           "XMLs",
@@ -183,11 +185,17 @@ async function readingAllXMLsProductsAndFormatInJson(records, idsProdutosComXmlE
           const xmlEstoque = fs.readFileSync(pathXmlProduct, "utf-8");
           try {
             const result = await xml2js.parseStringPromise(xmlEstoque);
-            const estoqueRow = result.retProdutoEstoque?.EstoqueLoja?.[0]?.["$"];
-            if (estoqueRow) {
-              estoque = parseInt(parseFloat(estoqueRow.qSaldo));
+            const estoqueNodes = result.retProdutoEstoque?.EstoqueLoja ?? [];
+            if (Array.isArray(estoqueNodes) && estoqueNodes.length > 0) {
+              estoque = estoqueNodes.reduce((acc, node) => {
+                const q = parseFloat(node["$"]?.qSaldo ?? 0) || 0;
+                return acc + q;
+              }, 0);
+            } else if (estoqueNodes && estoqueNodes["$"]) {
+              estoque = parseFloat(estoqueNodes["$"].qSaldo) || 0;
             }
-          } catch {
+            estoque = parseInt(Math.floor(estoque));
+          } catch (e) {
             estoque = 0;
           }
         }
@@ -196,7 +204,7 @@ async function readingAllXMLsProductsAndFormatInJson(records, idsProdutosComXmlE
         const subcategoria = (produto.pro_descSubCategoria?.toUpperCase() === "SEM SUBCATEGORIA") ? "" : produto.pro_descSubCategoria;
         const marca = (produto.pro_descMarca?.toUpperCase() === "SEM MARCA") ? "" : produto.pro_descMarca;
 
-        // Se quiser, pode incluir published aqui, usando as regras que você definiu:
+        // published segue a regra: estoque > 0, preco > 0 e status ativo (0)
         const published = estoque > 0 && preco > 0 && produto.pro_indStatus === "0";
 
         const obj = {
@@ -227,10 +235,15 @@ async function readingAllXMLsProductsAndFormatInJson(records, idsProdutosComXmlE
 async function readingAllRecordProducts(productsRecords, index) {
   return new Promise(async (resolve, reject) => {
     try {
+      if(!productsRecords || productsRecords.length===0){
+        resolve();
+        return;
+      }
+
       const record = productsRecords[index];
       const i = index + 1;
 
-      if (i > productsRecords.length) {
+      if (index >= productsRecords.length) {
         resolve();
         return;
       }
@@ -276,7 +289,10 @@ async function readingAllRecordProducts(productsRecords, index) {
         }, 1500);
       } catch (error) {
         console.log(error);
-        resolve(); // evita travar a cadeia
+        // continuar a fila mesmo se erro em um produto
+        setTimeout(() => {
+          readingAllRecordProducts(productsRecords, i).then(resolve);
+        }, 1500);
       }
     } catch (error) {
       console.log(error);
@@ -295,7 +311,8 @@ async function registerOrUpdateProduct(product) {
       let nameProduct = product.name;
 
       let justProduct = product.variants[0];
-      let productAndVariants = product;
+      // clone para evitar mutação acidental
+      let productAndVariants = Object.assign({}, product);
       delete productAndVariants.variants;
 
       var productAlreadyRegister = productsDB[`${product.codigo}`]
@@ -331,53 +348,57 @@ async function registerOrUpdateProduct(product) {
       var UniqueIdProductOnNuvem = functionReturnUniqueIdProductOnNuvem();
       var IdProducAndVariants = functionReturnIdProductAndVariantsOnNuvem();
 
+      // CASO: novo produto e ativo no Saurus -> cadastrar + variações
       if (!productAlreadyRegister && productIsActiveOnSaurus) {
-        await preparingPostProduct(product).then(async () => {
-          await requireAllVariationsOfAProduct(
-            idProductSaurus,
-            nameProduct,
-            stockProduct,
-            recordsInReqCadastros
-          ).then(() => {
+        gravarLog(`Cadastrando produto novo: ${idProductSaurus}`);
+        await preparingPostProduct(product)
+          .then(async () => {
+            // sincronizar variações (usa tabPreco)
+            await requireAllVariationsOfAProduct(
+              idProductSaurus,
+              nameProduct,
+              stockProduct,
+              recordsInReqCadastros,
+              tabPreco
+            ).then(() => {
+              resolve();
+            });
+          })
+          .catch((err) => {
+            console.log("Erro no preparingPostProduct:", err);
             resolve();
           });
-        });
-      } else if (!productAlreadyRegister && !productIsActiveOnSaurus) {
+      }
+      // novo produto e INATIVO no Saurus -> ignorar
+      else if (!productAlreadyRegister && !productIsActiveOnSaurus) {
         resolve();
-      } else if (productAlreadyRegister && productIsActiveOnSaurus) {
+      }
+      // já existe no DB e ativo no Saurus
+      else if (productAlreadyRegister && productIsActiveOnSaurus) {
+        // se está ativo na Nuvem -> atualizar e sincronizar variações
         if (productIsActiveOnNuvem) {
+          gravarLog(`Atualizando produto existente: ${idProductSaurus}`);
           await preparingUpdateProduct(IdProducAndVariants, productAndVariants)
             .then(async () => {
+              // sincronizar variações (usa tabPreco)
               await requireAllVariationsOfAProduct(
                 idProductSaurus,
                 nameProduct,
                 stockProduct,
-                recordsInReqCadastros
+                recordsInReqCadastros,
+                tabPreco
               );
             })
-            .then(async () => {
-              let productsDBAtualizado = JSON.parse(
-                fs.readFileSync(pathProducts)
-              );
-
-              if (
-                Object.keys(
-                  productsDBAtualizado[`${idProductSaurus}`].variations
-                ).length === 0
-              ) {
-                await preparingUpdateVariation(
-                  justProduct,
-                  UniqueIdProductOnNuvem,
-                  IdProducAndVariants,
-                  idProductSaurus
-                ).then(() => {
-                  resolve();
-                });
-              } else {
-                resolve();
-              }
+            .then(() => {
+              resolve();
+            })
+            .catch((err) => {
+              console.log("Erro updating product + variations:", err);
+              resolve();
             });
         } else {
+          // produto ativo no Saurus mas inativo na Nuvem -> reativar
+          gravarLog(`Reativando produto na nuvem: ${idProductSaurus}`);
           await preparingUndeleteProduct(
             product.codigo,
             IdProducAndVariants,
@@ -387,27 +408,40 @@ async function registerOrUpdateProduct(product) {
               idProductSaurus,
               nameProduct,
               stockProduct,
-              recordsInReqCadastros
+              recordsInReqCadastros,
+              tabPreco
             ).then(() => {
               resolve();
             });
+          }).catch((err) => {
+            console.log("Erro undelete product:", err);
+            resolve();
           });
         }
-      } else if (productAlreadyRegister && !productIsActiveOnSaurus) {
+      }
+      // já existe no DB e INATIVO no Saurus -> se está ativo na Nuvem, ocultar (delete)
+      else if (productAlreadyRegister && !productIsActiveOnSaurus) {
         if (productIsActiveOnNuvem) {
+          gravarLog(`Ocultando (deletando) produto: ${idProductSaurus}`);
           await preparingDeleteProduct(
             product.codigo,
             IdProducAndVariants,
             productAndVariants
           ).then(() => {
             resolve();
+          }).catch((err) => {
+            console.log("Erro preparingDeleteProduct:", err);
+            resolve();
           });
         } else {
           resolve();
         }
+      } else {
+        resolve();
       }
     } catch (error) {
-      console.log(error);
+      console.log("Erro registerOrUpdateProduct:", error);
+      resolve();
     }
   });
 }
