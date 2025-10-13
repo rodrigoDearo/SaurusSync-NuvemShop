@@ -343,14 +343,16 @@ async function registerOrUpdateProduct(product) {
       };
 
       var statusProductOnNuvem = await functionReturnStatusOnNuvem();
-      var productIsActiveOnNuvem =
-        statusProductOnNuvem == "ATIVO" ? true : false;
+      var productIsActiveOnNuvem = statusProductOnNuvem == "ATIVO" ? true : false;
       var UniqueIdProductOnNuvem = functionReturnUniqueIdProductOnNuvem();
       var IdProducAndVariants = functionReturnIdProductAndVariantsOnNuvem();
 
       // CASO: novo produto e ativo no Saurus -> cadastrar + variações
       if (!productAlreadyRegister && productIsActiveOnSaurus) {
         gravarLog(`Cadastrando produto novo: ${idProductSaurus}`);
+
+        delete product.variants;
+
         await preparingPostProduct(product)
           .then(async () => {
             // sincronizar variações (usa tabPreco)

@@ -2,13 +2,13 @@ const axios = require('axios');
 
 const { successHandlingRequests, errorHandlingRequest, saveNewUniqueIdInProduct, gravarLog } = require('./auxFunctions');
 
-async function registerProduct(store_id, header, body, idHost){
+async function registerProduct(store_id, header, body, idSaurus){
     return new Promise(async (resolve, reject) => {
         await axios.post(`https://api.nuvemshop.com.br/v1/${store_id}/products`, body, header)
         .then(async (answer) => {
-            await successHandlingRequests('product', 'post', idHost, answer.data.id, answer.data.variants[0].id)
+            await successHandlingRequests('product', 'post', idSaurus, answer.data.id, answer.data.variants[0].id)
             .then(async () => {
-                await updateVariation(store_id, header, {"price": body.price, "stock": body.stock}, answer.data.id, answer.data.variants[0].id, idHost)
+                await updateVariation(store_id, header, {"price": body.price, "stock": body.stock}, answer.data.id, answer.data.variants[0].id, idSaurus)
             })
             .catch(async () => {
                 resolve()
@@ -16,16 +16,16 @@ async function registerProduct(store_id, header, body, idHost){
         })
         .catch(async (error) => {
             if(error.response){
-                await errorHandlingRequest('product', 'POST', idHost, null, error.response.data, body)
+                await errorHandlingRequest('product', 'POST', idSaurus, null, error.response.data, body)
             }else{
                 setTimeout(async () => {
-                    await registerProduct(store_id, header, body, idHost)
+                    await registerProduct(store_id, header, body, idSaurus)
                     .then(async() => {
                         resolve()
                     })
                     .catch(async () => {
                         console.log('Register Product Loading...')
-                        await errorHandlingRequest('product', 'POST', idHost, null, 'CONNECTION ERROR', body)
+                        await errorHandlingRequest('product', 'POST', idSaurus, null, 'CONNECTION ERROR', body)
                         .then(async () => {
                             resolve()
                         })
@@ -40,7 +40,7 @@ async function registerProduct(store_id, header, body, idHost){
 }
 
 
-async function putVariantsInProduct(store_id, header, body, idproduct, idProductHost){
+async function putVariantsInProduct(store_id, header, body, idproduct, idProductSaurus){
     return new Promise(async (resolve, reject) => {
         await axios.put(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idproduct}/variants/`, body, header)
         .then(async(answer) => {
@@ -48,19 +48,19 @@ async function putVariantsInProduct(store_id, header, body, idproduct, idProduct
         })
         .catch(async (error) => {
             if(error.response){
-                await errorHandlingRequest('product', 'PUT', idProductHost, idproduct, error.response.data, body)
+                await errorHandlingRequest('product', 'PUT', idProductSaurus, idproduct, error.response.data, body)
                 .then(() => {
                     reject()
                 })
             }else{
                 setTimeout(async() => {
-                    await putVariantsInProduct(store_id, header, body, idproduct, idProductHost)
+                    await putVariantsInProduct(store_id, header, body, idproduct, idProductSaurus)
                     .then(async() => {
                         resolve()
                     })
                     .catch(async () => {
                         console.log('Put Variants in Product Loading...')
-                        await errorHandlingRequest('product', 'PUT', idProductHost, idproduct, 'CONNECTION ERROR', body)
+                        await errorHandlingRequest('product', 'PUT', idProductSaurus, idproduct, 'CONNECTION ERROR', body)
                         .then(async () => {
                             resolve()
                         })
@@ -76,24 +76,24 @@ async function putVariantsInProduct(store_id, header, body, idproduct, idProduct
 }
 
 
-async function updateProduct(store_id, header, body, idproduct, idHost){
+async function updateProduct(store_id, header, body, idproduct, idSaurus){
     return new Promise(async (resolve, reject) => {
         await axios.put(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idproduct}`, body, header)
         .then(async (response) => {
-            await successHandlingRequests('product', 'update', idHost, idproduct, null)
+            await successHandlingRequests('product', 'update', idSaurus, idproduct, null)
         })
         .catch(async (error) => {
             if(error.response){
-                await errorHandlingRequest('product', 'PUT', idHost, idproduct, error.response.data, body)
+                await errorHandlingRequest('product', 'PUT', idSaurus, idproduct, error.response.data, body)
             }else{
                 setTimeout(async () => {
-                    await updateProduct(store_id, header, body, idproduct, idHost)
+                    await updateProduct(store_id, header, body, idproduct, idSaurus)
                     .then(async() => {
                         resolve()
                     })
                     .catch(async () => {
                         console.log('Update Product Loading...')
-                        await errorHandlingRequest('product', 'PUT', idHost, idproduct, 'CONNECTION ERROR', body)
+                        await errorHandlingRequest('product', 'PUT', idSaurus, idproduct, 'CONNECTION ERROR', body)
                         .then(async () => {
                             resolve()
                         })
@@ -108,25 +108,25 @@ async function updateProduct(store_id, header, body, idproduct, idHost){
 }
 
 
-async function deleteProduct(store_id, header, body, idproduct, idHost){
+async function deleteProduct(store_id, header, body, idproduct, idSaurus){
     return new Promise(async (resolve, reject) => {
         await axios.put(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idproduct}`, body, header)
         .then(async () => {
-            await successHandlingRequests('product', 'delete', idHost, idproduct, null)
+            await successHandlingRequests('product', 'delete', idSaurus, idproduct, null)
         })
         .catch(async (error) => {
             if(error.response){
-                await errorHandlingRequest('product', 'DELETE', idHost, idproduct, error.response.data, body)
+                await errorHandlingRequest('product', 'DELETE', idSaurus, idproduct, error.response.data, body)
             }else{
                 setTimeout(async () => {
-                    await deleteProduct(store_id, header, body, idproduct, idHost)
+                    await deleteProduct(store_id, header, body, idproduct, idSaurus)
                     .then(async() => {
                         resolve()
                     })
                     .catch(async () => {
                         console.log('Delete Product Loading...')
 
-                        await errorHandlingRequest('product', 'DELETE', idHost, idproduct, 'CONNECTION ERROR', body)
+                        await errorHandlingRequest('product', 'DELETE', idSaurus, idproduct, 'CONNECTION ERROR', body)
                         .then(async () => {
                             resolve()
                         })
@@ -175,25 +175,25 @@ async function deleteProductPermanent(store_id, header, idproduct){
 }
 
 
-async function undeleteProduct(store_id, header, body, idproduct, idHost){
+async function undeleteProduct(store_id, header, body, idproduct, idSaurus){
     return new Promise(async (resolve, reject) => {
         await axios.put(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idproduct}`, body, header)
         .then(async (response) => {
-            await successHandlingRequests('product', 'undelete', idHost, idproduct, null)
+            await successHandlingRequests('product', 'undelete', idSaurus, idproduct, null)
         })
         .catch(async (error) => {
             if(error.response){
-                await errorHandlingRequest('product', 'UNDELETE', idHost, idproduct, error.response.data, body)
+                await errorHandlingRequest('product', 'UNDELETE', idSaurus, idproduct, error.response.data, body)
             }else{
                 setTimeout(async () => {
-                    await undeleteProduct(store_id, header, body, idproduct, idHost)
+                    await undeleteProduct(store_id, header, body, idproduct, idSaurus)
                     .then(async() => {
                         resolve()
                     })
                     .catch(async () => {
                         console.log('Undelete Product Loading...')
 
-                        await errorHandlingRequest('product', 'UNDELETE', idHost,  'CONNECTION ERROR', body)
+                        await errorHandlingRequest('product', 'UNDELETE', idSaurus,  'CONNECTION ERROR', body)
                         .then(async () => {
                             resolve()
                         })
@@ -255,14 +255,14 @@ async function registerCategory(store_id, header, body, type, category){
 }
 
 /* VER DEPOIS
-function deleteCategory(header, idcustomer, idHost){
+function deleteCategory(header, idcustomer, idSaurus){
     return new Promise(async (resolve, reject) => {
         await axios.delete(`${url}/categories/:id`, header)
         .then(async () => {
-            await successHandlingRequests('category', 'delete', idHost, idcustomer)
+            await successHandlingRequests('category', 'delete', idSaurus, idcustomer)
         })
         .catch(async (error) => {
-            await errorHandlingRequest('category', 'DELETE', idHost, idcustomer, error.response.data, null)
+            await errorHandlingRequest('category', 'DELETE', idSaurus, idcustomer, error.response.data, null)
         })
         .finally(() => {
             resolve()
@@ -274,7 +274,7 @@ function deleteCategory(header, idcustomer, idHost){
 // ---------------------------------------------------------------------
 
 
-async function getVariants(store_id, header, idproduct, idProductHost){
+async function getVariants(store_id, header, idproduct, idProductSaurus){
     return new Promise(async (resolve, reject) => {
         await axios.get(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idproduct}/variants`, header)
         .then(async (answer) => {
@@ -282,18 +282,18 @@ async function getVariants(store_id, header, idproduct, idProductHost){
         })
         .catch(async (error) => {
             if(error.response){
-                await errorHandlingRequest('variation', 'GET', idProductHost, null, error.response.data, null)
+                await errorHandlingRequest('variation', 'GET', idProductSaurus, null, error.response.data, null)
                 .then(() => {
                     reject()
                 })
             }else{
                 setTimeout(async () => {
-                    await getVariants(store_id, header, idproduct, idProductHost)
+                    await getVariants(store_id, header, idproduct, idProductSaurus)
                     .then(async() => {
                         resolve()
                     })
                     .catch(async () => {
-                        await errorHandlingRequest('variation', 'GET', idProductHost, null, 'CONNECTION ERROR', null)
+                        await errorHandlingRequest('variation', 'GET', idProductSaurus, null, 'CONNECTION ERROR', null)
                         .then(() => {
                             reject()
                         })
@@ -309,25 +309,35 @@ async function getVariants(store_id, header, idproduct, idProductHost){
 }
 
 
-async function registerVariation(store_id, header, body, idproduct, idProductHost){
+async function registerVariation(store_id, header, body, idproduct, idProductSaurus){
     return new Promise(async (resolve, reject) => {
         await axios.post(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idproduct}/variants`, body, header)
         .then(async (answer) => {
-            await successHandlingRequests('variation', 'post', idProductHost, answer.data.id, [body.values[0].pt])
+            await successHandlingRequests('variation', 'post', idProductSaurus, answer.data.id, [body.values[0].pt])
         })
         .catch(async (error) => {
             if(error.response){
-                await errorHandlingRequest('variation', 'POST', idProductHost, null, error.response.data, body)
+
+                if(error.response.data.values[0]=='The values has the wrong number of elements.'){
+                    await updateProduct(store_id, header, {"attributes":[{"pt": 'Variação'}]}, idproduct, idProductSaurus)
+                    .then(async () => {
+                        console.log('Atualizado produto para poder definir elementos das variacoes')
+                        await registerVariation(store_id, header, body, idproduct, idProductSaurus)
+                    })
+                }else{
+                    await errorHandlingRequest('variation', 'POST', idProductSaurus, null, error.response.data, body)
+                }
+                
             }else{
                 setTimeout(async () => {
-                    await registerVariation(store_id, header, body, idproduct, idProductHost)
+                    await registerVariation(store_id, header, body, idproduct, idProductSaurus)
                     .then(async() => {
                         resolve()
                     })
                     .catch(async () => {
                         console.log('Register Variation Loading...')
 
-                        await errorHandlingRequest('variation', 'POST', idProductHost, null, 'CONNECTION ERROR', body)
+                        await errorHandlingRequest('variation', 'POST', idProductSaurus, null, 'CONNECTION ERROR', body)
                         .then(async () => {
                             resolve()
                         })
@@ -342,35 +352,43 @@ async function registerVariation(store_id, header, body, idproduct, idProductHos
 }
 
 
-async function updateVariation(store_id, header, body, idproduct, idVariant, idProductHost){
+async function updateVariation(store_id, header, body, idproduct, idVariant, idProductSaurus){
     return new Promise(async (resolve, reject) => {
         await axios.put(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idproduct}/variants/${idVariant}`, body, header)
         .then(async() => {
             if(body.values){
-                await successHandlingRequests('variation', 'update', idProductHost, idVariant, [body.values[0].pt])
+                await successHandlingRequests('variation', 'update', idProductSaurus, idVariant, [body.values[0].pt])
             }else{
-                await successHandlingRequests('product', 'update', idProductHost, idproduct, null)
+                await successHandlingRequests('product', 'update', idProductSaurus, idproduct, null)
             }
             
         })
         .catch(async (error) => {
             if(error.response){
                 if(error.response.data.description=='Product_Variant with such id does not exist'){
-                    await deleteVariation(store_id, header, idproduct, idVariant, idProductHost, 'PRODUTO DESCONHECIDO', 0) 
+                    await deleteVariation(store_id, header, idproduct, idVariant, idProductSaurus, 'PRODUTO DESCONHECIDO', 0) 
+                }else
+                if(error.response.data.values[0]=='The values has the wrong number of elements.'){
+                    await updateProduct(store_id, header, {"attributes":[{"pt": 'Variação'}]}, idproduct, idProductSaurus)
+                    .then(async () => {
+                        console.log('Atualizado produto para poder definir elementos das variacoes')
+                        await updateVariation(store_id, header, body, idproduct, idVariant, idProductSaurus)
+                    })
                 }else{
-                    await errorHandlingRequest('variation', 'PUT', idProductHost, idVariant, error.response.data, body)
+                    await errorHandlingRequest('variation', 'PUT', idProductSaurus, idVariant, error.response.data, body)
                 }
                
-            }else{
+            }
+            else{
                 setTimeout(async () => {
-                    await updateVariation(store_id, header, body, idproduct, idVariant, idProductHost)
+                    await updateVariation(store_id, header, body, idproduct, idVariant, idProductSaurus)
                     .then(async() => {
                         resolve()
                     })
                     .catch(async () => {
                         console.log('Update Variation Loading...')
 
-                        await errorHandlingRequest('variation', 'PUT', idProductHost, idVariant, 'CONNECTION ERROR', body)
+                        await errorHandlingRequest('variation', 'PUT', idProductSaurus, idVariant, 'CONNECTION ERROR', body)
                         .then(async () => {
                             resolve()
                         })
@@ -386,53 +404,53 @@ async function updateVariation(store_id, header, body, idproduct, idVariant, idP
 
 
 
-async function deleteVariation(store_id, header, idproduct, idVariant, idProductHost, nameVariant, stockProduct){
+async function deleteVariation(store_id, header, idproduct, idVariant, idProductSaurus, nameVariant, stockProduct){
     return new Promise(async (resolve, reject) => {
         await axios.delete(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idproduct}/variants/${idVariant}`, header)
         .then(async () => {
-            await successHandlingRequests('variation', 'delete', idProductHost, idVariant, [nameVariant])
+            await successHandlingRequests('variation', 'delete', idProductSaurus, idVariant, [nameVariant])
         })
         .catch(async (error) => {
             if(error.response){
 
                 if(error.response.data.description=='Product_Variant with such id does not exist'){
-                    await successHandlingRequests('variation', 'delete', idProductHost, idVariant, [nameVariant])
+                    await successHandlingRequests('variation', 'delete', idProductSaurus, idVariant, [nameVariant])
                 }else
                 if(error.response.data.description=="The last variant of a product cannot be deleted."){
                     let newUniqueId;
 
-                    await updateProduct(store_id, header, {"attributes": [""]}, idproduct, idProductHost)
+                    await updateProduct(store_id, header, {"attributes": [""]}, idproduct, idProductSaurus)
                     .then(async () => {
-                        await getVariants(store_id, header, idproduct, idProductHost)
+                        await getVariants(store_id, header, idproduct, idProductSaurus)
                         .then(async (response) => {
                             response[0].values = []
                             let bodyPutVariants = response
-                            await putVariantsInProduct(store_id, header, bodyPutVariants, idproduct, idProductHost)
+                            await putVariantsInProduct(store_id, header, bodyPutVariants, idproduct, idProductSaurus)
                             .then(async (response) => {
-                                await saveNewUniqueIdInProduct(idProductHost, response)
+                                await saveNewUniqueIdInProduct(idProductSaurus, response)
                                 newUniqueId = response;
                             })
                         })
                         .then(async () => {
-                            await updateProduct(store_id, header, {"attributes":[{"pt": 'Variação'}]}, idproduct, idProductHost)
+                            await updateProduct(store_id, header, {"attributes":[{"pt": 'Variação'}]}, idproduct, idProductSaurus)
                         })
                         .then(async () => {
-                            await updateVariation(store_id, header, {"stock": stockProduct}, idproduct, newUniqueId, idProductHost)
+                            await updateVariation(store_id, header, {"stock": stockProduct}, idproduct, newUniqueId, idProductSaurus)
                         })
                     })
                     .then(async () => {
-                        await successHandlingRequests('variation', 'delete', idProductHost, idVariant, [nameVariant])
+                        await successHandlingRequests('variation', 'delete', idProductSaurus, idVariant, [nameVariant])
                     })
                     .catch(async () => {
-                        await errorHandlingRequest('variation', 'DELETE', idProductHost, idVariant, error.response.data, null)
+                        await errorHandlingRequest('variation', 'DELETE', idProductSaurus, idVariant, error.response.data, null)
                         resolve()
                     })
                 }else{
-                    await errorHandlingRequest('variation', 'DELETE', idProductHost, idVariant, error.response.data, null)
+                    await errorHandlingRequest('variation', 'DELETE', idProductSaurus, idVariant, error.response.data, null)
                 }
             }else{
                 setTimeout(async () => {
-                    await deleteVariation(store_id, header, idproduct, idVariant, idProductHost, nameVariant, stockProduct)
+                    await deleteVariation(store_id, header, idproduct, idVariant, idProductSaurus, nameVariant, stockProduct)
                     .then(async() => {
                         resolve()
                     })
@@ -440,7 +458,7 @@ async function deleteVariation(store_id, header, idproduct, idVariant, idProduct
                         console.log('Delete Variation Loading...')
 
 
-                        await errorHandlingRequest('variation', 'DELETE', idProductHost, idVariant, 'CONNECTION ERROR', null)
+                        await errorHandlingRequest('variation', 'DELETE', idProductSaurus, idVariant, 'CONNECTION ERROR', null)
                         .then(async () => {
                             resolve()
                         })
@@ -454,76 +472,6 @@ async function deleteVariation(store_id, header, idproduct, idVariant, idProduct
         })    
     })
 }
-/*
-async function uploadImage(store_id, header, body, idProductNuvem, idProductHost, hash){
-    return new Promise(async (resolve, reject) => {
-        await axios.post(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idProductNuvem}/images`, body, header)
-        .then(async (answer) => {
-            await successHandlingRequests('image', 'post', idProductHost, answer.data.id, [hash])
-        })
-        .catch(async (error) => {
-
-            if(error.response){
-                await errorHandlingRequest('image', 'POST', idProductHost, null, error.response.data, body)
-            }else{
-                setTimeout(async () => {
-                    await uploadImage(store_id, body, idProductNuvem, idProductHost)
-                    .then(async() => {
-                        resolve()
-                    })
-                    .catch(async () => {
-                        console.log('Upload Image Loading...')
-
-                        await errorHandlingRequest('image', 'POST', idProductHost, null, 'CONNECTION ERROR', body)
-                        .then(async () => {
-                            resolve()
-                        })
-                    })
-                }, 1500); 
-            }
-        })
-        .finally(() => {
-            resolve()
-        })    
-    })
-}
-
-
-async function deleteImage(store_id, header, idProductNuvem, idImage, idProductHost){
-    return new Promise(async (resolve, reject) => {
-        await axios.delete(`https://api.nuvemshop.com.br/v1/${store_id}/products/${idProductNuvem}/images/${idImage}`, header)
-        .then(async (answer) => {
-            await successHandlingRequests('image', 'delete', idProductHost, null, null)
-        })
-        .catch(async (error) => {
-            if(error.response){
-                if(error.response.data.description=='Product_Image with such id does not exist'){
-                    await successHandlingRequests('image', 'delete', idProductHost, null, null)
-                }else{
-                    await errorHandlingRequest('image', 'DELETE', idProductHost, null, error.response.data, null)
-                }
-            }else{
-                setTimeout(async () => {
-                    await deleteImage(store_id, header, idProductNuvem, idImage, idProductHost)
-                    .then(async() => {
-                        resolve()
-                    })
-                    .catch(async () => {
-                        console.log('Delete Image Loading...')
-
-                        await errorHandlingRequest('image', 'DELETE', idProductHost, null, 'CONNECTION ERROR', null)
-                        .then(async () => {
-                            resolve()
-                        })
-                    })
-                }, 1500); 
-            }
-        })
-        .finally(() => {
-            resolve()
-        })    
-    })
-}*/
 
 
 // ---------------------------------------------------------------------
@@ -534,7 +482,7 @@ async function generateToken(body){
         let success;
 
         await axios.post('https://www.nuvemshop.com.br/apps/authorize/token', body, {
-            'User-Agent': `HostSync (${body.client_id})`, 
+            'User-Agent': `SaurusSync (${body.client_id})`, 
             'Content-Type': 'application/json'
           })
         .then(async (answer) => {
