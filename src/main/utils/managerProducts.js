@@ -257,7 +257,7 @@ async function readingAllRecordProducts(productsRecords, index) {
       const product = {
         codigo: record.ID_PRODUTO,
         name: record.PRODUTO,
-        description: record.DESCRICAO_COMPLEMENTAR, 
+        //description: record.DESCRICAO_COMPLEMENTAR, 
         attributes: [
           {
             pt: "Variação",
