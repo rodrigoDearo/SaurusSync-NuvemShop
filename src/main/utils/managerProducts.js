@@ -20,8 +20,8 @@ const { returnValueFromJson } = require("./manageInfoUser.js");
 const { requireAllVariationsOfAProduct } = require("./managerVariations.js");
 const { clearFolderXMLProductsRecursive, getActualDatetime, gravarLog }= require("./auxFunctions.js");
 
-const userDataPath = "src/build";
-//const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
+//const userDataPath = "src/build";
+const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathProducts = path.join(userDataPath, "products.json");
 
 var recordsInReqCadastros, tabPreco, idProdutos;
@@ -257,7 +257,7 @@ async function readingAllRecordProducts(productsRecords, index) {
       const product = {
         codigo: record.ID_PRODUTO,
         name: record.PRODUTO,
-        description: record.DESCRICAO_COMPLEMENTAR,
+        description: record.DESCRICAO_COMPLEMENTAR, 
         attributes: [
           {
             pt: "Variação",

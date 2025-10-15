@@ -1,8 +1,8 @@
 const { app } = require('electron')
 const path = require('node:path')
 
-const userDataPath = 'src/build';
-//const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
+//const userDataPath = 'src/build';
+const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 require('dotenv').config({ path: path.join(userDataPath, '.env') });
 
 function returnInfo(infoRequired){

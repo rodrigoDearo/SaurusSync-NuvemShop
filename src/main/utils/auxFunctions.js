@@ -4,8 +4,8 @@ const zlib = require('zlib');
 const path = require('node:path');
 const { app } = require('electron')
 
-const userDataPath = 'src/build';
-//const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
+//const userDataPath = 'src/build';
+const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathLog = path.join(userDataPath, 'logs');
 const pathConfigApp = path.join(userDataPath, 'configApp.json');
 const pathProducts = path.join(userDataPath, 'products.json');
@@ -290,6 +290,17 @@ async function findProductKeyByIdNuvemShopAsync(data, idToFind) {
 }
 
 
+async function findIdVariantFromNameVariant(data, nameVariant){
+  return new Promise(async (resolve, reject) => {
+    for(let i=0; i<data.length; i++){
+      if(data[i].values[0].pt==nameVariant){
+        resolve(data[i].id)
+      }
+    }
+  })
+}
+
+
 function copyJsonFilesToUserData() {
   // Caminho correto onde os arquivos são empacotados
   const resourcesPath = process.env.PORTABLE_EXECUTABLE_DIR || path.dirname(process.execPath);
@@ -422,6 +433,7 @@ module.exports = {
     deleteErrorsRecords,
     getActualDatetime,
     gravarLog,
+    findIdVariantFromNameVariant,
     returnNumberCodeOfPasswordSaurus,
     encodedStringInBase64,
     saveDecodedXmlFromBase64ZipReqCadastros,

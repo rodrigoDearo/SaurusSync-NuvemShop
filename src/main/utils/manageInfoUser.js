@@ -6,8 +6,8 @@ const path = require('node:path')
 const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 
-const userDataPath = 'src/build';
-//const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
+//const userDataPath = 'src/build';
+const userDataPath = path.join(app.getPath('userData'), 'ConfigFiles');
 const pathConfigApp = path.join(userDataPath, 'configApp.json');
 
 async function saveInfos(systemSave, infos) {

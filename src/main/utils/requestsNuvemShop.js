@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const { successHandlingRequests, errorHandlingRequest, saveNewUniqueIdInProduct, gravarLog } = require('./auxFunctions');
+const { successHandlingRequests, errorHandlingRequest, saveNewUniqueIdInProduct, gravarLog, findIdVariantFromNameVariant } = require('./auxFunctions');
 
 async function registerProduct(store_id, header, body, idSaurus){
     return new Promise(async (resolve, reject) => {
@@ -316,27 +316,45 @@ async function registerVariation(store_id, header, body, idproduct, idProductSau
             await successHandlingRequests('variation', 'post', idProductSaurus, answer.data.id, [body.values[0].pt])
         })
         .catch(async (error) => {
-            if(error.response){
-
-                if(error.response.data.values[0]=='The values has the wrong number of elements.'){
-                    await updateProduct(store_id, header, {"attributes":[{"pt": 'Variação'}]}, idproduct, idProductSaurus)
-                    .then(async () => {
-                        console.log('Atualizado produto para poder definir elementos das variacoes')
-                        await registerVariation(store_id, header, body, idproduct, idProductSaurus)
-                    })
-                }else{
-                    await errorHandlingRequest('variation', 'POST', idProductSaurus, null, error.response.data, body)
+            if(error.response){ 
+                if(error.response.data.values){ //erro tentando cadastrar variante com numero errado de elementos
+                    if(error.response.data.values[0]=='The values has the wrong number of elements.'){
+                        await updateProduct(store_id, header, {"attributes":[{"pt": 'Variação'}]}, idproduct, idProductSaurus)
+                        .then(async () => {
+                            console.log('Atualizado produto para poder definir elementos das variacoes')
+                            await registerVariation(store_id, header, body, idproduct, idProductSaurus)
+                        })
+                    }else{
+                        await errorHandlingRequest('variation', 'POST', idProductSaurus, null, error.response.data, body)
+                    }
+                }else{ //variante ja existe
+                    if(error.response.data.description=="Variants cannot be repeated"){
+                        gravarLog('Variante ja existe, procurando ID da variante para atualizar banco')
+                        await getVariants(store_id, header, idproduct, idProductSaurus)
+                        .then(async (variantsOfProduct) => {
+                            let nameVariant = body.values[0].pt
+                            await findIdVariantFromNameVariant(variantsOfProduct, nameVariant)
+                            .then(async (idVariantFound) => {
+                                await successHandlingRequests('variation', 'post', idProductSaurus, idVariantFound, [nameVariant])
+                            })
+                            .catch(() => {
+                                gravarLog('Devido a alguma exception nao foi possivel encontrar id de variante que consta como existente na base da nuvemshop')
+                                console.log('Devido a alguma exception nao foi possivel encontrar id de variante que consta como existente na base da nuvemshop')
+                                resolve()
+                            })
+                        })
+                    }else{
+                        console.log(error.response.data)
+                    }  
                 }
                 
-            }else{
+            }else{ // request sem response
                 setTimeout(async () => {
                     await registerVariation(store_id, header, body, idproduct, idProductSaurus)
                     .then(async() => {
                         resolve()
                     })
                     .catch(async () => {
-                        console.log('Register Variation Loading...')
-
                         await errorHandlingRequest('variation', 'POST', idProductSaurus, null, 'CONNECTION ERROR', body)
                         .then(async () => {
                             resolve()
